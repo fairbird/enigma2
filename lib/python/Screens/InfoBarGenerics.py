@@ -52,6 +52,15 @@ from Menu import MainMenu, mdom
 # sys.maxint on 64bit (2**63-1) fails with OverflowError on eActionMap.bindAction use 32bit value (2**31-1)
 maxint = 2147483647
 
+from Components.config import ConfigInteger
+from Blackhole.BhEI import Nab_ExtraInfobar, nab_Switch_Autocam
+from Tools.Directories import SCOPE_HDD, resolveFilename, pathExists
+from os import stat as os_stat, remove as os_remove
+config.misc.delitelcdbri = ConfigInteger(default=3)
+config.misc.deliteeinfo = ConfigBoolean(default=False)
+config.misc.delitepanicb = ConfigBoolean(default=False)
+config.misc.deliteepgbuttons = ConfigBoolean(default=True)
+
 def isStandardInfoBar(self):
 	return self.__class__.__name__ == "InfoBar"
 
@@ -126,10 +135,12 @@ resumePointCacheLast = int(time())
 class InfoBarDish:
 	def __init__(self):
 		self.dishDialog = self.session.instantiateDialog(Dish)
+		self.dishDialog.setAnimationMode(0)
 
 class InfoBarUnhandledKey:
 	def __init__(self):
 		self.unhandledKeyDialog = self.session.instantiateDialog(UnhandledKey)
+		self.unhandledKeyDialog.setAnimationMode(0)
 		self.hideUnhandledKeySymbolTimer = eTimer()
 		self.hideUnhandledKeySymbolTimer.callback.append(self.unhandledKeyDialog.hide)
 		self.checkUnusedTimer = eTimer()
@@ -247,13 +258,20 @@ class InfoBarShowHide(InfoBarScreenSaver):
 		InfoBarScreenSaver.__init__(self)
 		self.__state = self.STATE_SHOWN
 		self.__locked = 0
+		self.__stateNab = self.STATE_HIDDEN
 
 		self.hideTimer = eTimer()
+		self.autocamTimer.timeout.get().append(self.checkAutocam)
+		self.autocamTimer_active = 0
+		self.autocampop_active = 0
 		self.hideTimer.callback.append(self.doTimerHide)
 		self.hideTimer.start(5000, True)
 
 		self.onShow.append(self.__onShow)
 		self.onHide.append(self.__onHide)
+		self.InfoBar_NabDialog = ''
+		if ".InfoBar'>" in str(self):
+			self.InfoBar_NabDialog = self.session.instantiateDialog(Nab_ExtraInfobar)
 
 		self.onShowHideNotifiers = []
 
@@ -286,6 +304,10 @@ class InfoBarShowHide(InfoBarScreenSaver):
 		for x in self.onShowHideNotifiers:
 			x(True)
 		self.startHideTimer()
+		if config.misc.deliteeinfo.value and self.InfoBar_NabDialog:
+			self.InfoBar_NabDialog.show()
+			self.__stateNab = self.STATE_SHOWN
+			self.instance.hide()
 
 	def __onHide(self):
 		self.__state = self.STATE_HIDDEN
@@ -335,6 +357,13 @@ class InfoBarShowHide(InfoBarScreenSaver):
 
 	def serviceStarted(self):
 		if self.execing:
+			if self.autocamTimer_active == 1:
+				self.autocamTimer.stop()
+				self.autocamTimer.start(1000)
+				self.autocamTimer_active = 1
+			if self.autocampop_active == 1:
+				Notifications.RemovePopup(id='DeliteAutocam')
+				self.autocampop_active = 0
 			if config.usage.show_infobar_on_zap.value:
 				self.doShow()
 		self.showHideVBI()
@@ -377,9 +406,13 @@ class InfoBarShowHide(InfoBarScreenSaver):
 			if not(hasattr(self, "hotkeyGlobal") and self.hotkeyGlobal("info") != 0):
 				self.showDefaultEPG()
 		elif self.actualSecondInfoBarScreen and config.usage.show_second_infobar.value and not self.actualSecondInfoBarScreen.shown:
-			self.show()
-			self.actualSecondInfoBarScreen.show()
-			self.startHideTimer()
+			if self.InfoBar_NabDialog:
+				self.InfoBar_NabDialog.show()
+				self.__stateNab = self.STATE_SHOWN
+				self.instance.hide()
+				self.show()
+				self.actualSecondInfoBarScreen.show()
+				self.startHideTimer()
 		else:
 			self.hide()
 			self.hideTimer.stop()
@@ -402,6 +435,31 @@ class InfoBarShowHide(InfoBarScreenSaver):
 		self.__locked -= 1
 		if self.execing:
 			self.startHideTimer()
+			
+	def checkAutocam(self):
+		self.autocamTimer.stop()
+		self.autocamTimer_active = 0
+		refstr = ''
+		if self.session.nav.getCurrentlyPlayingServiceReference():
+			refstr = self.session.nav.getCurrentlyPlayingServiceReference().toString()
+		nabcur = '/usr/camscript/Ncam_Ci.sh'
+		nabnew = '/usr/camscript/Ncam_Ci.sh'
+		if fileExists('/etc/BhCamConf'):
+			f = open('/etc/BhCamConf', 'r')
+			for line in f.readlines():
+				parts = line.strip().split('|')
+				if parts[0] == 'delcurrent':
+					nabcur = parts[1]
+				elif parts[0] == 'deldefault':
+					nabnew = parts[1]
+				elif parts[0] == refstr:
+					nabnew = parts[1]
+			f.close()
+		if nabcur != nabnew:
+			camname = nab_Switch_Autocam(nabcur, nabnew)
+			mymess = '     Black Hole Autocam switching to:\n     ' + camname
+			Notifications.AddPopup(text=mymess, type=MessageBox.TYPE_INFO, timeout=5, id='DeliteAutocam')
+			self.autocampop_active = 1
 
 	def checkHideVBI(self):
 		service = self.session.nav.getCurrentlyPlayingServiceReference()
@@ -572,7 +630,14 @@ class InfoBarNumberZap:
 		if number == 0:
 			if isinstance(self, InfoBarPiP) and self.pipHandles0Action():
 				self.pipDoHandle0Action()
-			elif len(self.servicelist.history) > 1:
+			else:
+				if config.misc.delitepanicb.value:
+					self.servicelist.history = []
+					self.servicelist.history_pos = 0
+					self.zapToNumber(1)
+				else:
+					self.servicelist.recallPrevService()
+			if len(self.servicelist.history) > 1:
 				self.checkTimeshiftRunning(self.recallPrevService)
 		else:
 			if "TimeshiftActions" in self and self.timeshiftEnabled():
@@ -684,14 +749,20 @@ class InfoBarChannelSelection:
 
 	def historyBackCheckTimeshiftCallback(self, answer):
 		if answer:
-			self.servicelist.historyBack()
+			if config.usage.historymode.getValue() == '0':
+				self.servicelist.historyBack()
+			else:
+				self.servicelist.historyZap(-1)
 
 	def historyNext(self):
 		self.checkTimeshiftRunning(self.historyNextCheckTimeshiftCallback)
 
 	def historyNextCheckTimeshiftCallback(self, answer):
 		if answer:
-			self.servicelist.historyNext()
+			if config.usage.historymode.getValue() == '0':
+				self.servicelist.historyNext()
+			else:
+				self.servicelist.historyZap(+1)
 
 	def keyUpCheck(self):
 		if config.usage.oldstyle_zap_controls.value:
@@ -1228,6 +1299,7 @@ class InfoBarRdsDecoder:
 	def __init__(self):
 		self.rds_display = self.session.instantiateDialog(RdsInfoDisplay)
 		self.session.instantiateSummaryDialog(self.rds_display)
+		self.rds_display.setAnimationMode(0)
 		self.rass_interactive = None
 
 		self.__event_tracker = ServiceEventTracker(screen=self, eventmap=
@@ -2297,6 +2369,7 @@ class InfoBarPiP:
 				self.ScreenSaverTimerStart()
 		else:
 			self.session.pip = self.session.instantiateDialog(PictureInPicture)
+			self.session.pip.setAnimationMode(0)
 			self.session.pip.show()
 			newservice = self.lastPiPService or self.session.nav.getCurrentlyPlayingServiceOrGroup() or (slist and slist.servicelist.getCurrent())
 			if self.session.pip.playService(newservice):
@@ -2632,12 +2705,17 @@ class InfoBarInstantRecord:
 
 	def instantRecord(self, serviceRef=None):
 		self.SelectedInstantServiceRef = serviceRef
-		pirr = preferredInstantRecordPath()
-		if not findSafeRecordPath(pirr) and not findSafeRecordPath(defaultMoviePath()):
-			if not pirr:
-				pirr = ""
-			self.session.open(MessageBox, _("Missing ") + "\n" + pirr +
-						 "\n" + _("No HDD found or HDD not initialized!"), MessageBox.TYPE_ERROR)
+		dir = preferredInstantRecordPath()
+		if not dir or not fileExists(dir, 'w'):
+			dir = defaultMoviePath()
+			
+		if not fileExists("/hdd", 0):
+			print "not found /hdd"
+			system("ln -s /media/hdd /hdd")
+		try:
+			stat = os_stat(dir)
+		except:
+			self.session.open(MessageBox, _('Missing ') + '\n' + dir + '\n' + _('No HDD found or HDD not initialized!'), MessageBox.TYPE_ERROR)
 			return
 
 		if isStandardInfoBar(self):
@@ -3219,12 +3297,23 @@ class InfoBarSummary(Screen):
 #			<convert type="ServiceName">Reference</convert>
 #		</widget>
 
+config.misc.delitepiconlcd = ConfigBoolean(default=False)
+
+class NabInfoBarSummary(Screen):
+	skin = '\n        <screen position="0,0" size="132,64">\n                <widget source="session.CurrentService" render="Picon" zPosition="1" position="31,0" size="70,40" path="piconlcd" >\n                        <convert type="ServiceName">Reference</convert>\n                </widget>\n                <widget source="session.RecordState" render="FixedLabel" text="R" position="110,10" size="20,20" font="Regular;20" >\n                        <convert type="ConditionalShowHide">Blink</convert>\n                </widget>\n                <widget source="session.Event_Now" render="Progress" position="3,42" size="126,4" borderWidth="1" >\n                        <convert type="EventTime">Progress</convert>\n                </widget>\n                <widget source="global.CurrentTime" render="Label" position="0,46" size="132,18" font="LCD;20" halign="center" >\n                        <convert type="ClockToText">WithSeconds</convert>\n                </widget>\n        </screen>'
+	
+	def __init__(self, session, parent):
+		Screen.__init__(self, session, parent=parent)
+
 class InfoBarSummarySupport:
 	def __init__(self):
 		pass
 
 	def createSummary(self):
-		return InfoBarSummary
+		if config.misc.delitepiconlcd.value:
+			return NabInfoBarSummary
+		else:
+			return InfoBarSummary
 
 class InfoBarMoviePlayerSummary(Screen):
 	skin = """
@@ -3281,6 +3370,7 @@ class InfoBarSubtitleSupport(object):
 
 		if isStandardInfoBar(self):
 			self.subtitle_window = self.session.instantiateDialog(SubtitleDisplay)
+			self.subtitle_window.setAnimationMode(0)
 		else:
 			from Screens.InfoBar import InfoBar
 			self.subtitle_window = InfoBar.instance.subtitle_window
