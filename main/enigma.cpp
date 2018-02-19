@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 	printf("DVB_API_VERSION %d DVB_API_VERSION_MINOR %d\n", DVB_API_VERSION, DVB_API_VERSION_MINOR);
 
 	// get enigma2 debug level settings
-	debugLvl = getenv("ENIGMA_DEBUG_LVL") ? atoi(getenv("ENIGMA_DEBUG_LVL")) : 3;
+	debugLvl = getenv("ENIGMA_DEBUG_LVL") ? atoi(getenv("ENIGMA_DEBUG_LVL")) : 4;
 	if (debugLvl < 0)
 		debugLvl = 0;
 	printf("ENIGMA_DEBUG_LVL=%d\n", debugLvl);
@@ -354,3 +354,26 @@ void dump_malloc_stats(void)
 	struct mallinfo mi = mallinfo();
 	eDebug("MALLOC: %d total", mi.uordblks);
 }
+
+#ifdef USE_LIBVUGLES2
+#include <vuplus_gles.h>
+
+void setAnimation_current(int a)
+{
+	gles_set_animation_func(a);
+}
+
+void setAnimation_speed(int speed)
+{
+	gles_set_animation_speed(speed);
+}
+
+void setAnimation_current_listbox(int a)
+{
+	gles_set_animation_listbox_func(a);
+}
+#else
+void setAnimation_current(int a) {}
+void setAnimation_speed(int speed) {}
+void setAnimation_current_listbox(int a) {}
+#endif
