@@ -42,6 +42,7 @@ from Plugins.Plugin import PluginDescriptor
 from Components.PluginComponent import plugins
 from Screens.ChoiceBox import ChoiceBox
 from Screens.EventView import EventViewEPGSelect
+from Blackhole.BhEpgSearch import Nab_EpgSearch, Nab_EpgSearchLast
 import os, unicodedata
 profile("ChannelSelection.py after imports")
 
@@ -519,6 +520,7 @@ class ChannelContextMenu(Screen):
 			if hasattr(self.session, 'pipshown') and self.session.pipshown and hasattr(self.session, 'pip'):
 				del self.session.pip
 			self.session.pip = self.session.instantiateDialog(PictureInPicture)
+			self.session.pip.setAnimationMode(0)
 			self.session.pip.show()
 			if self.session.pip.playService(newservice):
 				self.session.pipshown = True
@@ -1712,33 +1714,41 @@ class ChannelSelectionBase(Screen):
 			self.keyNumberGlobal(number)
 
 	def keyNumberGlobal(self, number):
-		if self.isBasePathEqual(self.bouquet_root):
-			if hasattr(self, "editMode") and self.editMode:
-				if number == 2:
-					self.renameEntry()
-				if number == 6:
-					self.toggleMoveMode(select=True)
-				if number == 8:
-					self.removeCurrentEntry(bouquet=False)
-			else:
-				self.numberSelectionActions(number)
+		unichar = self.numericalTextInput.getKey(number)
+		charstr = unichar.encode('utf-8')
+		if config.misc.deliteepgbuttons.value:
+			if unichar == '1':
+				self.session.openWithCallback(self.ShowsearchNab, VirtualKeyBoard, title='Enter event to search', text='')
+			elif unichar == '2':
+				self.Show2Nab()
+			elif unichar == '3':
+				self.Show3Nab()
+			elif unichar == '4':
+				self.session.open(Nab_EpgSearchLast)
+		elif len(charstr) == 1:
+			self.servicelist.moveToChar(charstr[0])
+
+	def ShowsearchNab(self, cmd):
+		if cmd is not None:
+			self.session.open(Nab_EpgSearch, cmd)
+
+	def Show2Nab(self):
+		ref = self.getCurrentSelection()
+		ptr = eEPGCache.getInstance()
+		if ptr.startTimeQuery(ref) != -1:
+			self.session.open(EPGSelection, ref)
 		else:
-			current_root = self.getRoot()
-			if  current_root and 'FROM BOUQUET "bouquets.' in current_root.getPath():
-				if hasattr(self, "editMode") and self.editMode:
-					if number == 2:
-						self.renameEntry()
-					if number == 6:
-						self.toggleMoveMode(select=True)
-					if number == 8:
-						self.removeCurrentEntry(bouquet=True)
-				else:
-					self.numberSelectionActions(number)
-			else:
-				unichar = self.numericalTextInput.getKey(number)
-				charstr = unichar.encode("utf-8")
-				if len(charstr) == 1:
-					self.servicelist.moveToChar(charstr[0])
+			self.session.open(MessageBox, 'Sorry no epg currently available for this service.', MessageBox.TYPE_INFO)
+
+	def Show3Nab(self):
+		myplugin = ''
+		for p in plugins.getPlugins(where=PluginDescriptor.WHERE_EVENTINFO):
+			nam = p.name
+			pos = nam.find('EPG')
+			if pos != -1:
+				myplugin = p
+		if myplugin:
+			myplugin(session=self.session, servicelist=self)
 
 	def numberSelectionActions(self, number):
 		if not(hasattr(self, "movemode") and self.movemode):
@@ -2387,6 +2397,7 @@ class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelS
 		self.onLayoutFinish.append(self.onCreate)
 
 		self.info = session.instantiateDialog(RadioInfoBar) # our simple infobar
+		self.session.pip.setAnimationMode(0)
 
 		self["actions"] = ActionMap(["OkCancelActions", "TvRadioActions"],
 			{
