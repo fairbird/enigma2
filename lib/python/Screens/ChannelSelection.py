@@ -2387,6 +2387,7 @@ class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelS
 		self.onLayoutFinish.append(self.onCreate)
 
 		self.info = session.instantiateDialog(RadioInfoBar) # our simple infobar
+		self.session.pip.setAnimationMode(0)
 
 		self["actions"] = ActionMap(["OkCancelActions", "TvRadioActions"],
 			{
