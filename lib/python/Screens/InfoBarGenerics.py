@@ -291,8 +291,18 @@ class InfoBarShowHide(InfoBarScreenSaver):
 		self.__state = self.STATE_HIDDEN
 		if self.actualSecondInfoBarScreen:
 			self.actualSecondInfoBarScreen.hide()
+		if self.__stateNab == self.STATE_SHOWN:
+			self.InfoBar_NabDialog.hide()
+			self.__stateNab = self.STATE_HIDDEN
+		self.resetAlpha()
 		for x in self.onShowHideNotifiers:
 			x(False)
+
+	def resetAlpha(self):
+		if config.usage.show_infobar_do_dimming.value:
+			self.unDimmingTimer = eTimer()
+			self.unDimmingTimer.callback.append(self.unDimming)
+			self.unDimmingTimer.start(300, True)
 
 	def toggleShowLong(self):
 		if not config.usage.ok_is_channelselection.value:
@@ -322,7 +332,7 @@ class InfoBarShowHide(InfoBarScreenSaver):
 			self.hide()
 
 	def hidePipOnExitCallback(self, answer):
-		if answer:
+		if answer == True:
 			self.showPiP()
 
 	def connectShowHideNotifier(self, fnc):
@@ -335,9 +345,34 @@ class InfoBarShowHide(InfoBarScreenSaver):
 
 	def serviceStarted(self):
 		if self.execing:
+			if self.autocamTimer_active == 1:
+				self.autocamTimer.stop()
+				self.autocamTimer.start(1000)
+				self.autocamTimer_active = 1
+			if self.autocampop_active == 1:
+				Notifications.RemovePopup(id='DeliteAutocam')
+				self.autocampop_active = 0
 			if config.usage.show_infobar_on_zap.value:
 				self.doShow()
 		self.showHideVBI()
+
+	def doDimming(self):
+		if config.usage.show_infobar_do_dimming.value:
+			self.dimmed = int(int(self.dimmed) - 1)
+		else:
+			self.dimmed = 0
+		self.DimmingTimer.stop()
+		self.doHide()
+
+	def unDimming(self):
+		self.unDimmingTimer.stop()
+		self.doWriteAlpha(config.av.osd_alpha.value)
+
+	def doWriteAlpha(self, value):
+		if fileExists("/proc/stb/video/alpha"):
+			f=open("/proc/stb/video/alpha","w")
+			f.write("%i" % (value))
+			f.close()
 
 	def startHideTimer(self):
 		if self.__state == self.STATE_SHOWN and not self.__locked:
@@ -355,8 +390,19 @@ class InfoBarShowHide(InfoBarScreenSaver):
 
 	def doTimerHide(self):
 		self.hideTimer.stop()
-		if self.__state == self.STATE_SHOWN:
-			self.hide()
+		self.DimmingTimer = eTimer()
+		self.DimmingTimer.callback.append(self.doDimming)
+		self.DimmingTimer.start(70, True)
+		self.dimmed = config.usage.show_infobar_dimming_speed.value
+
+	def doHide(self):
+		if self.__state != self.STATE_HIDDEN:
+			if self.dimmed > 0:
+				self.doWriteAlpha(int(int(config.av.osd_alpha.value) * int(self.dimmed) / int(config.usage.show_infobar_dimming_speed.value)))
+				self.DimmingTimer.start(5, True)
+			else:
+				self.DimmingTimer.stop()
+				self.hide()
 
 	def okButtonCheck(self):
 		if config.usage.ok_is_channelselection.value and hasattr(self, "openServiceList"):
