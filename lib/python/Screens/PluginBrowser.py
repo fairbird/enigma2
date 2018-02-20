@@ -55,8 +55,7 @@ class PluginBrowser(Screen, ProtectedScreen):
 
 		self.firsttime = True
 
-		self["key_red"] = self["red"] = Label(_("Remove plugins"))
-		self["key_green"] = self["green"] = Label(_("Download plugins"))
+		self["key_red"] = self["red"] = Label(_("Download plugins"))
 		self.list = []
 		self["list"] = PluginList(self.list)
 
@@ -68,8 +67,7 @@ class PluginBrowser(Screen, ProtectedScreen):
 		})
 		self["PluginDownloadActions"] = ActionMap(["ColorActions"],
 		{
-			"red": self.delete,
-			"green": self.download
+			"red": self.download
 		})
 		self["DirectionActions"] = ActionMap(["DirectionActions"],
 		{
@@ -252,7 +250,6 @@ class PluginDownloadBrowser(Screen):
 		self.installedplugins = []
 		self.plugins_changed = False
 		self.reload_settings = False
-		self.check_softcams = False
 		self.check_settings = False
 		self.install_settings_name = ''
 		self.remove_settings_name = ''
@@ -266,7 +263,7 @@ class PluginDownloadBrowser(Screen):
 		})
 		if os.path.isfile('/usr/bin/opkg'):
 			self.ipkg = '/usr/bin/opkg'
-			self.ipkg_install = self.ipkg + ' install'
+			self.ipkg_install = self.ipkg + ' install --force-overwrite'
 			self.ipkg_remove =  self.ipkg + ' remove --autoremove'
 		else:
 			self.ipkg = 'ipkg'
@@ -299,8 +296,6 @@ class PluginDownloadBrowser(Screen):
 			self["text"].setText(_("Reloading bouquets and services..."))
 			eDVBDB.getInstance().reloadBouquets()
 			eDVBDB.getInstance().reloadServicelist()
-		if self.check_softcams:
-			SystemInfo["HasSoftcamInstalled"] = hassoftcaminstalled()
 		plugins.readPluginList(resolveFilename(SCOPE_PLUGINS))
 		self.container.appClosed.remove(self.runFinished)
 		self.container.dataAvail.remove(self.dataAvail)
@@ -405,8 +400,6 @@ class PluginDownloadBrowser(Screen):
 		self.plugins_changed = True
 		if self["list"].l.getCurrentSelection()[0].name.startswith("settings-"):
 			self.reload_settings = True
-		if self["list"].l.getCurrentSelection()[0].name.startswith("softcams-"):
-			self.check_softcams = True
 		self.expanded = []
 		self.updateList()
 		self["list"].moveToIndex(0)
