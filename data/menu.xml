@@ -13,6 +13,14 @@
 	<code> .. code .. </code>
 		"exec"s code
 -->
+                <item level="0" weight="1" text="Teleportation" entryID="blackhole_red"><screen module="BhRed" screen="BhRedp_main" /></item>
+		<item level="0" weight="2" text="Black Hole apps" entryID="blackhole_extra"><screen module="BhSettings" screen="DeliteSettings" /></item>
+		<item level="0" weight="3" text="Plugins" entryID="plugin_selection"><screen module="PluginBrowser" screen="PluginBrowser" /></item>
+		<item level="0" weight="4" text="Addons" entryID="bh_addons"><screen module="BhAddons" screen="DeliteAddons" /></item>
+		<item level="0" weight="5" text="Epg Panel" entryID="epg_panel"><screen module="BhEpgPanel" screen="DeliteEpgPanel" /></item>
+		<menu level="0" weight="6" text="Backup Menu" entryID="backup_screen">
+			<id val="bhbackup" />
+		</menu>
 		<item level="0" text="Timer" entryID="timer_edit"><screen module="TimerEdit" screen="TimerEditList"/></item>
 		<item level="1" text="VCR scart" entryID="scart_switch" configcondition="config.usage.show_vcr_scart" requires="ScartSwitch"><code>self.session.scart.VCRSbChanged(3)</code></item>
 
@@ -23,7 +31,6 @@
 			<item level="2" text="Streaming clients info" entryID="streaming_clients_info_screen"><screen module="StreamingClientsInfo"/></item>
 		</menu>
 
-		<item level="0" text="Plugins" entryID="plugin_selection"><screen module="PluginBrowser" screen="PluginBrowser"/></item>
 		<menu level="0" text="Setup" flushConfigOnClose="1" entryID="setup_selection" >
 			<id val="setup"/>
 			<menu weight="7" level="0" text="Service searching" entryID="service_searching_selection">
@@ -35,7 +42,7 @@
 			<menu weight="5" level="0" text="System" entryID="system_selection">
 				<id val="system"/>
 
-				<menu level="0" text="Audio / Video" entryID="video_selection">
+  				<menu level="0" text="Audio / Video" entryID="video_selection">
 				<id val="video"/>
 				<item level="0" entryID="av_setup"><setup id="avsetup"/></item>
 				<item level="2" entryID="subtitle_setup"><setup id="subtitlesetup"/></item>
@@ -50,11 +57,10 @@
 				<id val="expert"/>
 				<item level="2" entryID="epg_settings"><setup id="epgsettings"/></item>
 				<item level="0" entryID="recording_setup"><setup id="recording"/></item>
-
-
-					<menu level="0" text="Harddisk" entryID="hardisk_selection" requires="Harddisk">
+				        
+                                        <menu level="0" text="Harddisk" entryID="hardisk_selection" requires="Harddisk">
 					<id val="harddisk"/>
-					<item level="0" entryID="harddisk_setup"><setup id="harddisk"/></item>
+					<item level="1" entryID="harddisk_setup"><setup id="harddisk"/></item>
 					<item level="0" text="Initialization" entryID="harddisk_init"><screen module="HarddiskSetup" screen="HarddiskSelection"/></item>
 					<item level="0" text="Filesystem check" entryID="harddisk_check"><screen module="HarddiskSetup" screen="HarddiskFsckSelection"/></item>
 					</menu>
@@ -66,14 +72,19 @@
 				<item level="0" text="Language" entryID="language_setup"><screen module="LanguageSelection"/></item>
 				<item level="0" entryID="timezone_setup"><setup id="timezone"/></item>
 				<item level="1" text="Hotkey" entryID="hotkey_setup"><screen module="Hotkey" screen="HotkeySetup"/></item>
+
 				</menu>
 			</menu>
-			<menu weight="10" text="SoftCam / CI" entryID="cam_setup">
-				<id val="cam"/>
-				<item weight="10" level="0" text="Softcam Setup" entryID="softcam_setup"><screen module="SoftcamSetup" screen="SoftcamSetup"/></item>
-				<item weight="10" level="0" text="Common Interface" entryID="ci_setup" requires="CommonInterface"><screen module="Ci" screen="CiSelection"/></item>
+                        <menu weight="10" text="SoftCam / CI" entryID="ci_setup">
+				<id val="cam" />
+				<item weight="10" level="0" text="Common Interface" entryID="ci_setup"><screen module="Ci" screen="CiSelection" /></item>
+				<item weight="11" level="2" text="CCcam info" entryID="cccaminfo"><screen module="CCcamInfo" screen="CCcamInfoMain" /></item>
+				<item weight="11" level="2" text="OScam info" entryID="oscaminfo"><screen module="OScamInfo" screen="OscamInfoMenu" /></item>
+				<item weight="11" level="2" text="Mgcamd Info" entryID="mgcamdinfo"><screen module="MgcamdInfo" screen="MgcamdInfo" /></item>
+				<item weight="11" level="2" text="Ncam Info" entryID="ncaminfo"><screen module="NcamInfo" screen="NcamInfoMenu" /></item>
 			</menu>
 			<item weight="15" level="0" text="Parental control" entryID="parental_setup"><screen module="ParentalControlSetup" screen="ParentalControlSetup"/></item>
+			<item weight="15" level="0" text="Ipk uninstall" entryID="Ipk_uninstall"><screen module="Ipkuninstall" screen="Ipkuninstall" /></item>
 			<item weight="15" level="0" text="Factory reset" entryID="factory_reset">
 				<code>
 from Screens.FactoryReset import FactoryReset
@@ -81,21 +92,22 @@ def msgClosed(ret):
 	if ret:
 		from os import system, _exit
 		system("rm -R /etc/enigma2")
+		system("cp -R /usr/share/enigma2/defaults /etc/enigma2")
+		system("/usr/bin/showiframe /boot/backdrop.mvi")
 		_exit(0)
 self.session.openWithCallback(msgClosed, FactoryReset)
 </code>
 			</item>
-			<item weight="15" level="0" text="Flash image" entryID="flash_image" requires="canFlashWithOfgwrite" ><screen module="FlashImage" screen="SelectImage"/></item>
-			<item weight="15" level="0" text="Software update" entryID="software_update"><screen module="SoftwareUpdate" screen="UpdatePlugin"/></item>
+			<!--item weight="15" level="0" text="Software update" entryID="software_update"><screen module="SoftwareUpdate" screen="UpdatePlugin"/></item-->
 		</menu>
-		<menu text="Standby / restart" entryID="standby_restart_list">
-			<id val="shutdown"/>
-			<item text="Sleep timer" entryID="sleep"><screen module="SleepTimerEdit" screen="SleepTimerEdit"/></item>
-			<item text="Standby" entryID="standby"><screen module="Standby" screen="Standby"/></item>
-			<item text="Restart" entryID="restart"><screen module="Standby" screen="TryQuitMainloop">2</screen></item>
-			<item text="Multiboot" entryID="multiboot" requires="canMultiBoot"><screen module="FlashImage" screen="MultibootSelection">1</screen></item>
-			<item text="Restart enigma" entryID="restart_enigma"><screen module="Standby" screen="TryQuitMainloop">3</screen></item>
-			<item text="Deep standby" requires="DeepstandbySupport" entryID="deep_standby"><screen module="Standby" screen="TryQuitMainloop">1</screen></item>
-			<item text="Shutdown" requires="!DeepstandbySupport" entryID="deep_standby"><screen module="Standby" screen="TryQuitMainloop">1</screen></item>
+                <menu text="Black Hole Shutdown" entryID="standby_restart_list">
+			<id val="shutdown" />
+			<!--<item text="Standby"><code>quitMainloop(0)</code></item>-->
+			<item weight="0" text="Shutdown" entryID="deep_standby"><screen module="Standby" screen="TryQuitMainloop">1</screen></item>
+			<item weight="1" text="Restart" entryID="restart"><screen module="Standby" screen="TryQuitMainloop">2</screen></item>
+			<item weight="2" text="Restart Gui" entryID="restart_enigma"><screen module="Standby" screen="TryQuitMainloop">3</screen></item>
+			<item weight="3" text="Hard Reset" entryID="Hardreset"><screen module="Standby" screen="TryQuitMainloop">2</screen></item>
+			<item weight="4" text="Standby" entryID="standby"><screen module="Standby" screen="Standby"/></item>
+			<item weight="5" text="Set Sleeptimer" entryID="setsleeptimer"><screen module="SleepTimerEdit" screen="SleepTimerEdit"/></item>
 		</menu>
 </menu>
