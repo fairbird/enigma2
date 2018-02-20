@@ -1,20 +1,37 @@
 <skin>
-	<!-- id=1 is for 132x64 LCD or OLED -->
-	<windowstyle id="1" type="skinned">
-		<color color="#000000" name="Background"/>
-		<color color="#ffffff" name="LabelForeground"/>
-		<color color="#000000" name="ListboxBackground"/>
-		<color color="#ffffff" name="ListboxForeground"/>
-		<color color="#000000" name="ListboxSelectedBackground"/>
-		<color color="#ffffff" name="ListboxSelectedForeground"/>
-		<color color="#000000" name="ListboxMarkedBackground"/>
-		<color color="#ffffff" name="ListboxMarkedForeground"/>
-		<color color="#000000" name="ListboxMarkedAndSelectedBackground"/>
-		<color color="#ffffff" name="ListboxMarkedAndSelectedForeground"/>
-		<color color="#ffffff" name="WindowTitleForeground"/>
-		<color color="#000000" name="WindowTitleBackground"/>
+	<!-- Main screen colors (id=1 LCD) -->
+	<windowstyle type="skinned" id="1">
+		<color name="Background" color="#000000" />
+		<color name="LabelForeground" color="#ffffff" />
+		<color name="ListboxBackground" color="#000000" />
+		<color name="ListboxForeground" color="#ffffff" />
+		<color name="ListboxSelectedBackground" color="#000000" />
+		<color name="ListboxSelectedForeground" color="#ffffff" />
+		<color name="ListboxMarkedBackground" color="#000000" />
+		<color name="ListboxMarkedForeground" color="#ffffff" />
+		<color name="ListboxMarkedAndSelectedBackground" color="#000000" />
+		<color name="ListboxMarkedAndSelectedForeground" color="#ffffff" />
+		<color name="WindowTitleForeground" color="#ffffff" />
+		<color name="WindowTitleBackground" color="#000000" />
+	</windowstyle>
+	<!-- Main screen colors (id=2 Color OLED (dm800se)) -->
+	<windowstyle type="skinned" id="2">
+		<color name="Background" color="#000000" />
+		<color name="LabelForeground" color="#ffffff" />
+		<color name="ListboxBackground" color="#000000" />
+		<color name="ListboxForeground" color="#ffffff" />
+		<color name="ListboxSelectedBackground" color="#000000" />
+		<color name="ListboxSelectedForeground" color="#ffffff" />
+		<color name="ListboxMarkedBackground" color="#000000" />
+		<color name="ListboxMarkedForeground" color="#ffffff" />
+		<color name="ListboxMarkedAndSelectedBackground" color="#000000" />
+		<color name="ListboxMarkedAndSelectedForeground" color="#ffffff" />
+		<color name="WindowTitleForeground" color="#ffffff" />
+		<color name="WindowTitleBackground" color="#000000" />
 	</windowstyle>
 	<fonts>
+		<font filename="nmsbd.ttf" name="Regular" scale="90"/>
+		<font filename="nmsbd.ttf" name="Display" scale="90"/>
 		<font filename="nmsbd.ttf" name="Regular" scale="90"/>
 		<font filename="andale.ttf" name="Fixed" scale="100"/>
 		<font filename="tuxtxt.ttf" name="Console" scale="100"/>
@@ -243,10 +260,43 @@
 	</screen>
 	<!-- Choice box -->
 	<screen name="ChoiceBox" position="center,center" size="550,400" title="Input">
-		<widget name="text" position="top" size="*,2h" font="TextNormal"/>
-		<widget name="list" position="fill" scrollbarMode="showOnDemand"/>
+		<widget name="text" position="10,10" size="550,25" font="Regular;20" />
+		<widget name="list" position="0,30" size="550,335" scrollbarMode="showOnDemand" />
 		<applet type="onLayoutFinish">
-self.autoResize()
+# this should be factored out into some helper code, but currently demonstrates applets.
+from enigma import eSize, ePoint
+
+orgwidth = self.instance.size().width()
+orgpos = self.instance.position()
+textsize = self[&quot;text&quot;].getSize()
+
+# y size still must be fixed in font stuff...
+textsize = (textsize[0] + 50, textsize[1] + 50)
+count = len(self.list)
+if count &gt; 10:
+	count = 10
+offset = 25 * count
+wsizex = textsize[0] + 60
+wsizey = textsize[1] + offset
+
+if (520 &gt; wsizex):
+	wsizex = 520
+wsize = (wsizex, wsizey)
+
+# resize
+self.instance.resize(eSize(*wsize))
+
+# resize label
+self[&quot;text&quot;].instance.resize(eSize(*textsize))
+
+# move list
+listsize = (wsizex, 25 * count)
+self[&quot;list&quot;].instance.move(ePoint(0, textsize[1]))
+self[&quot;list&quot;].instance.resize(eSize(*listsize))
+
+# center window
+newwidth = wsize[0]
+self.instance.move(ePoint((720-wsizex)/2, (576-wsizey)/(count &gt; 7 and 2 or 3)))
 		</applet>
 	</screen>
 	<!-- Hotkey -->
@@ -305,21 +355,50 @@ self.autoResize()
 		<widget name="config" position="10,30" size="420,220"/>
 	</screen>
 	<!-- Default wizard -->
-	<screen name="DefaultWizard" position="fill" title="Welcome..." flags="wfNoBorder">
-		<panel name="WizardMarginsTemplate"/>
-		<panel name="WizardPictureLangTemplate"/>
-		<panel name="RemoteControlTemplate"/>
-		<panel position="left" size="10,*"/>
-		<panel position="right" size="10,*"/>
-		<panel position="fill">
-			<widget name="text" position="top" size="*,270" font="Regular;23" valign="center"/>
-			<panel position="fill" layout="stack">
-				<widget source="list" render="Listbox" position="fill" scrollbarMode="showOnDemand">
-					<convert type="StringList"/>
-				</widget>
-				<widget name="config" position="fill" zPosition="1" scrollbarMode="showOnDemand" transparent="1"/>
-			</panel>
-		</panel>
+	<screen name="DefaultWizard" position="0,0" size="720,576" title="Welcome..." flags="wfNoBorder" >
+			<widget name="text" position="153,50" size="340,270" font="Regular;23" />
+			<widget source="list" render="Listbox" position="50,300" size="440,200" scrollbarMode="showOnDemand" >
+				<convert type="StringList" />
+			</widget>
+			<ePixmap pixmap="skin_default/buttons/button_red.png" position="40,225" size="15,16" alphatest="on" />
+			<widget name="languagetext" position="55,225" size="95,30" font="Regular;18" />
+			<widget name="config" position="50,300" zPosition="1" size="440,200" transparent="1" scrollbarMode="showOnDemand" />            
+			<!--widget name="stepslider" position="50,500" zPosition="1" borderWidth="2" size="440,20" backgroundColor="dark" /-->
+			<widget name="wizard" pixmap="skin_default/wizard.png" position="40,50" zPosition="10" size="110,174" transparent="1" alphatest="on"/>
+			<widget name="rc" pixmap="skin_default/rc.png" position="500,600" zPosition="10" size="154,471" transparent="1" alphatest="on"/>
+			<widget name="arrowdown" pixmap="skin_default/arrowdown.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+			<widget name="arrowup" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+			<widget name="arrowup2" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+	</screen>
+	<screen name="DefaultSatLists" position="0,0" size="720,576" title="Welcome..." flags="wfNoBorder" >
+			<widget name="text" position="153,50" size="340,270" font="Regular;23" />
+			<widget source="list" render="Listbox" position="50,300" size="440,200" scrollbarMode="showOnDemand" >
+				<convert type="StringList" />
+			</widget>
+			<ePixmap pixmap="skin_default/buttons/button_red.png" position="40,225" size="15,16" alphatest="on" />
+			<widget name="languagetext" position="55,225" size="95,30" font="Regular;18" />
+			<widget name="config" position="50,300" zPosition="1" size="440,200" transparent="1" scrollbarMode="showOnDemand" />            
+			<!--widget name="stepslider" position="50,500" zPosition="1" borderWidth="2" size="440,20" backgroundColor="dark" /-->
+			<widget name="wizard" pixmap="skin_default/wizard.png" position="40,50" zPosition="10" size="110,174" transparent="1" alphatest="on"/>
+			<widget name="rc" pixmap="skin_default/rc.png" position="500,600" zPosition="10" size="154,471" transparent="1" alphatest="on"/>
+			<widget name="arrowdown" pixmap="skin_default/arrowdown.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+			<widget name="arrowup" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+			<widget name="arrowup2" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+	</screen>
+	<screen name="DreamPackageWizard" position="0,0" size="720,576" title="Welcome..." flags="wfNoBorder" >
+			<widget name="text" position="153,50" size="340,270" font="Regular;23" />
+			<widget source="list" render="Listbox" position="50,300" size="440,200" scrollbarMode="showOnDemand" >
+				<convert type="StringList" />
+			</widget>
+			<ePixmap pixmap="skin_default/buttons/button_red.png" position="40,225" size="15,16" alphatest="on" />
+			<widget name="languagetext" position="55,225" size="95,30" font="Regular;18" />
+			<widget name="config" position="50,300" zPosition="1" size="440,200" transparent="1" scrollbarMode="showOnDemand" />            
+			<!--widget name="stepslider" position="50,500" zPosition="1" borderWidth="2" size="440,20" backgroundColor="dark" /-->
+			<widget name="wizard" pixmap="skin_default/wizard.png" position="40,50" zPosition="10" size="110,174" transparent="1" alphatest="on"/>
+			<widget name="rc" pixmap="skin_default/rc.png" position="500,600" zPosition="10" size="154,471" transparent="1" alphatest="on"/>
+			<widget name="arrowdown" pixmap="skin_default/arrowdown.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+			<widget name="arrowup" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
+			<widget name="arrowup2" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" transparent="1" alphatest="on"/>
 	</screen>
 	<!-- unhandled key pressed -->
 	<screen name="UnhandledKey" flags="wfNoBorder" position="620,50" size="34,45" title="UnhandledKey" zPosition="100" backgroundColor="transparent">
@@ -502,27 +581,26 @@ self.autoResize()
 			</convert>
 		</widget>
 	</screen>
-	<screen name="LanguageWizard" position="fill" title="Welcome..." flags="wfNoBorder">
-		<panel name="WizardMarginsTemplate"/>
-		<panel name="RemoteControlTemplate"/>
-		<panel position="left" size="10,*"/>
-		<panel position="right" size="10,*"/>
-		<panel position="fill">
-			<widget name="text" position="top" size="*,240" font="Regular;23" valign="center"/>
-			<panel position="bottom" size="*,50"/>
-			<widget source="languages" render="Listbox" position="fill" scrollbarMode="showOnDemand">
-				<convert type="TemplatedMultiContent">
-					{"template": [
-							MultiContentEntryText(pos = (80, 10), size = (200, 50), flags = RT_HALIGN_LEFT, text = 1), # index 1 is the language name,
-							MultiContentEntryPixmap(pos = (10, 5), size = (60, 40), png = 2), # index 2 is the pixmap
-						],
-					"fonts": [gFont("Regular", 20)],
-					"itemHeight": 50
-					}
-				</convert>
-			</widget>
-		</panel>
-	</screen>
+	<screen name="LanguageWizard" position="0,0" size="720,576" title="Welcome..." flags="wfNoBorder">
+		<widget name="text" position="153,50" size="340,240" font="Regular;23" />
+		<widget source="languages" render="Listbox" position="50,300" size="440,200" scrollbarMode="showOnDemand">
+			<convert type="TemplatedMultiContent">
+				{"template": [
+						MultiContentEntryText(pos = (80, 10), size = (200, 50), flags = RT_HALIGN_LEFT, text = 1), # index 1 is the language name,
+						MultiContentEntryPixmap(pos = (10, 5), size = (60, 40), png = 2), # index 2 is the pixmap
+					],
+				 "fonts": [gFont("Regular", 20)],
+				 "itemHeight": 50
+				}
+			</convert>
+		</widget>
+		<widget name="wizard" pixmap="skin_default/wizard.png" position="40,50" zPosition="10" size="110,174" alphatest="on" />
+		<widget name="rc" pixmaps="skin_default/rc.png,skin_default/rcold.png" position="500,50" zPosition="10" size="154,500" alphatest="on" />
+		<widget name="arrowdown" pixmap="skin_default/arrowdown.png" position="-100,-100" zPosition="11" size="37,70" alphatest="on" />
+		<widget name="arrowdown2" pixmap="skin_default/arrowdown.png" position="-100,-100" zPosition="11" size="37,70" alphatest="on" />
+		<widget name="arrowup" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" alphatest="on" />
+		<widget name="arrowup2" pixmap="skin_default/arrowup.png" position="-100,-100" zPosition="11" size="37,70" alphatest="on" />
+ 	</screen>
 	<screen name="InstallWizardIpkgUpdater" position="fill" flags="wfNoBorder">
 		<panel name="WizardMarginsTemplate"/>
 		<panel position="top" size="*,100"/>
