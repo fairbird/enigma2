@@ -1,6 +1,7 @@
 from Components.Converter.Converter import Converter
 from Components.Element import cached
-from Components.Converter.genre import getGenreStringSub
+from Components.Converter.genre import getGenreStringLong, getGenreStringSub
+from enigma import eEPGCache
 
 class EventName(Converter, object):
 	NAME = 0
@@ -17,9 +18,12 @@ class EventName(Converter, object):
 	PDCTIME = 11
 	PDCTIMESHORT = 12
 	ISRUNNINGSTATUS = 13
+        NEXT_NAME = 14
+        NEXT_DESCRIPTION = 15
 
 	def __init__(self, type):
 		Converter.__init__(self, type)
+                self.epgcache = eEPGCache.getInstance()
 		if type == "Description":
 			self.type = self.SHORT_DESCRIPTION
 		elif type == "ExtendedDescription":
@@ -32,6 +36,10 @@ class EventName(Converter, object):
 			self.type = self.NAME_NOW
 		elif type == "NameNext":
 			self.type = self.NAME_NEXT
+                elif type == "NextName":
+                        self.type = self.NEXT_NAME
+                elif type == "NextDescription":
+                        self.type = self.NEXT_DESCRIPTION
 		elif type == "Genre":
 			self.type = self.GENRE
 		elif type == "Rating":
@@ -119,6 +127,18 @@ class EventName(Converter, object):
 					return extended
 				description += '\n'
 			return description + extended
+                elif self.type == self.NEXT_NAME or self.type == self.NEXT_DESCRIPTION:
+                        reference = self.source.service
+                        info = reference and self.source.info
+                        if info is not None:
+                        	nextEvent = self.epgcache.lookupEvent(['SETX', (reference.toString(), 1, -1)])
+                                if self.type == self.NEXT_NAME:
+                                        return nextEvent[0][2]
+                                else:
+                                        if nextEvent[0][1] != "":
+                                                return nextEvent[0][1]
+                                        else:
+                                                return nextEvent[0][0]
 		elif self.type == self.ID:
 			return str(event.getEventId())
 		elif self.type == self.PDC:
