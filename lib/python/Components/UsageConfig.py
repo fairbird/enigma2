@@ -59,13 +59,15 @@ def InitUsageConfig():
 	config.usage.quickzap_bouquet_change = ConfigYesNo(default = False)
 	config.usage.e1like_radio_mode = ConfigYesNo(default = True)
 	choicelist = [("0", _("No timeout"))]
-	for i in range(1, 12):
+	for i in range(1, 20):
 		choicelist.append((str(i), ngettext("%d second", "%d seconds", i) % i))
 	config.usage.infobar_timeout = ConfigSelection(default = "5", choices = choicelist)
+	config.usage.show_infobar_do_dimming = ConfigYesNo(default = True)
+	config.usage.show_infobar_dimming_speed = ConfigSelectionNumber(min = 1, max = 40, stepwidth = 1, default = 40, wraparound = True)
 	config.usage.show_infobar_on_zap = ConfigYesNo(default = True)
 	config.usage.show_infobar_on_skip = ConfigYesNo(default = True)
 	config.usage.show_infobar_on_event_change = ConfigYesNo(default = False)
-	config.usage.show_second_infobar = ConfigSelection(default = "0", choices = [("", _("None"))] + choicelist + [("EPG",_("EPG"))])
+	config.usage.show_second_infobar = ConfigSelection(default = "5", choices = [("", _("None"))] + choicelist + [("EPG",_("EPG"))])
 	config.usage.show_simple_second_infobar = ConfigYesNo(default = False)
 	config.usage.infobar_frontend_source = ConfigSelection(default = "settings", choices = [("settings", _("Settings")), ("tuner", _("Tuner"))])
 	config.usage.oldstyle_zap_controls = ConfigYesNo(default = False)
@@ -116,6 +118,47 @@ def InitUsageConfig():
 	config.usage.timeshift_path = ConfigText(default = "/media/hdd/")
 	config.usage.allowed_timeshift_paths = ConfigLocations(default = ["/media/hdd/"])
 
+	config.ncaminfo = ConfigSubsection()
+	config.ncaminfo.showInExtensions = ConfigYesNo(default = False)
+	config.ncaminfo.autoupdate = ConfigYesNo(default = False)
+	config.ncaminfo.username = ConfigText(default='username', fixed_size=False, visible_width=12)
+	config.ncaminfo.password = ConfigPassword(default='password', fixed_size=False)
+	config.ncaminfo.ip = ConfigIP(default=[127,
+					       0,
+					       0,
+					       1], auto_jump=True)
+	config.ncaminfo.port = ConfigInteger(default=8181, limits=(0, 65536))
+	config.ncaminfo.intervall = ConfigSelectionNumber(min=1, max=600, stepwidth=1, default=10, wraparound=True)
+	config.oscaminfo = ConfigSubsection()
+	config.oscaminfo.showInExtensions = ConfigYesNo(default = False)
+	config.oscaminfo.userdatafromconf = ConfigYesNo(default = False)
+	config.oscaminfo.autoupdate = ConfigYesNo(default = False)
+	config.oscaminfo.username = ConfigText(default='username', fixed_size=False, visible_width=12)
+	config.oscaminfo.password = ConfigPassword(default='password', fixed_size=False)
+	config.oscaminfo.ip = ConfigIP(default=[127,
+						0,
+						0,
+						1], auto_jump=True)
+	config.oscaminfo.port = ConfigInteger(default=16002, limits=(0, 65536))
+	config.oscaminfo.intervall = ConfigSelectionNumber(min=1, max=600, stepwidth=1, default=10, wraparound=True)
+	SystemInfo['OScamInstalled'] = False
+	config.cccaminfo = ConfigSubsection()
+	config.cccaminfo.showInExtensions = ConfigYesNo(default = False)
+	config.cccaminfo.serverNameLength = ConfigSelectionNumber(min=10, max=100, stepwidth=1, default=22, wraparound=True)
+	config.cccaminfo.name = ConfigText(default='Profile', fixed_size=False)
+	config.cccaminfo.ip = ConfigText(default='192.168.2.12', fixed_size=False)
+	config.cccaminfo.username = ConfigText(default='', fixed_size=False)
+	config.cccaminfo.password = ConfigText(default='', fixed_size=False)
+	config.cccaminfo.port = ConfigInteger(default=16001, limits=(1, 65535))
+	config.cccaminfo.profile = ConfigText(default='', fixed_size=False)
+	config.cccaminfo.ecmInfoEnabled = ConfigYesNo(default = True)
+	config.cccaminfo.ecmInfoTime = ConfigSelectionNumber(min=1, max=10, stepwidth=1, default=5, wraparound=True)
+	config.cccaminfo.ecmInfoForceHide = ConfigYesNo(default = True)
+	config.cccaminfo.ecmInfoPositionX = ConfigInteger(default=50)
+	config.cccaminfo.ecmInfoPositionY = ConfigInteger(default=50)
+	config.cccaminfo.blacklist = ConfigText(default='/media/cf/CCcamInfo.blacklisted', fixed_size=False)
+	config.cccaminfo.profiles = ConfigText(default='/media/cf/CCcamInfo.profiles', fixed_size=False)
+
 	config.usage.movielist_trashcan = ConfigYesNo(default=True)
 	config.usage.movielist_trashcan_days = ConfigNumber(default=8)
 	config.usage.movielist_trashcan_reserve = ConfigNumber(default=40)
@@ -134,7 +177,7 @@ def InitUsageConfig():
 	config.usage.leave_movieplayer_onExit = ConfigSelection(default = "popup", choices = [
 		("no", _("no")), ("popup", _("With popup")), ("without popup", _("Without popup")), ("movielist", _("Return to movie list")) ])
 
-	config.usage.setup_level = ConfigSelection(default = "simple", choices = [
+	config.usage.setup_level = ConfigSelection(default = "expert", choices = [
 		("simple", _("Normal")),
 		("intermediate", _("Advanced")),
 		("expert", _("Expert")) ])
@@ -313,7 +356,7 @@ def InitUsageConfig():
 		setPreferredTuner(int(configElement.value))
 	config.usage.frontend_priority.addNotifier(PreferredTunerChanged)
 
-	config.usage.show_picon_in_display = ConfigYesNo(default = True)
+	config.usage.show_picon_in_display = ConfigYesNo(default = False)
 	config.usage.hide_zap_errors = ConfigYesNo(default = False)
 	config.usage.show_cryptoinfo = ConfigYesNo(default = True)
 	config.usage.show_eit_nownext = ConfigYesNo(default = True)
@@ -480,6 +523,7 @@ def InitUsageConfig():
 		config.misc.zapmode = ConfigSelection(default = "mute", choices = [
 			("mute", _("Black screen")), ("hold", _("Hold screen")), ("mutetilllock", _("Black screen till locked")), ("holdtilllock", _("Hold till locked"))])
 		config.misc.zapmode.addNotifier(setZapmode, immediate_feedback = False)
+	config.usage.historymode = ConfigSelection(default='1', choices=[('0', _('Just zap')), ('1', _('Show menu'))])
 
 	if SystemInfo["VFD_scroll_repeats"]:
 		def scroll_repeats(el):
