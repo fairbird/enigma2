@@ -24,7 +24,7 @@ class PluginComponent:
 		if self.firstRun or not plugin.needsRestart:
 			self.pluginList.append(plugin)
 			for x in plugin.where:
-				insort(self.plugins.setdefault(x, []), plugin)
+				insort(self.plugins.setdefault(x, []), (plugin))
 				if x == PluginDescriptor.WHERE_AUTOSTART:
 					plugin(reason=0)
 		else:
@@ -54,7 +54,7 @@ class PluginComponent:
 						except Exception, exc:
 							print "Plugin ", c + "/" + pluginname, "failed to load:", exc
 							# supress errors due to missing plugin.py* files (badly removed plugin)
-							for fn in ('plugin.py', 'plugin.pyc', 'plugin.pyo'):
+							for fn in ('plugin.py', 'plugin.pyc', 'plugin.pyo', 'plugin.so'):
 								if os.path.exists(os.path.join(path, fn)):
 									self.warnings.append( (c + "/" + pluginname, str(exc)) )
 									from traceback import print_exc
