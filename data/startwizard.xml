@@ -196,20 +196,7 @@ self.selectKey("LEFT")
 self.selectKey("RIGHT")
 			</code>
 		</step>
-		<step id="nimr">
-			<condition>
-from Components.NimManager import nimmanager
-self.condition = len(nimmanager.nim_slots) > 17 and not nimmanager.nim_slots[17].empty
-			</condition>
-			<text value="Please set up tuner R" />
-			<config screen="NimSetup" module="Satconfig" args="17" type="ConfigList" />
-			<code>
-self.clearSelectedKeys()
-self.selectKey("LEFT")
-self.selectKey("RIGHT")
-			</code>
-		</step>
-		<step id="channels">
+		<!--step id="channels">
 			<condition>
 from Components.NimManager import nimmanager
 self.condition = nimmanager.somethingConnected() and config.misc.installwizard.hasnetwork.value and config.misc.installwizard.ipkgloaded.value
@@ -221,35 +208,99 @@ self.clearSelectedKeys()
 self.selectKey("LEFT")
 self.selectKey("RIGHT")
 			</code>
-		</step>
-		<step id="doscan">
-			<text value="What type of service scan do you want?" />
+		</step-->
+		<step id="scanquestion">
+			<text value="Do you want to do a service scan?" />
 			<condition>
 from Components.NimManager import nimmanager
-self.condition = nimmanager.somethingConnected()
+self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
 			</condition>
-			<config screen="InstallWizard" module="InstallWizard" args="3" type="ConfigList" />
 			<code>
-self.clearSelectedKeys()
-self.selectKey("OK")
+self.hideRc()
+			</code>
+			<list>
+				<listentry caption="No" step="finisheddefaultsatlists" />
+				<listentry caption="Yes, do an automatic scan now" step="scan" />
+				<listentry caption="Yes, do a manual scan now" step="manualscan" />
+			</list>
+		</step>
+		<step id="scan" nextstep="finisheddefaultsatlists">
+			<condition>
+from Components.NimManager import nimmanager
+self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
+			</condition>
+			<text value="What do you want to scan?" />
+			<config screen="ScanSimple" module="ScanSetup" type="ConfigList" />
+		</step>
+		<step id="manualscan">
+			<condition>
+from Components.NimManager import nimmanager
+self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
+			</condition>
+			<text value="What do you want to scan?" />
+			<config screen="ScanSetup" module="ScanSetup" type="ConfigList" />
+		</step>
+		<step id="nextscan">
+			<condition>
+from Components.NimManager import nimmanager
+self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
+			</condition>
+			<text value="Do you want to do another manual service scan?" />
+			<list>
+				<listentry caption="No" step="finisheddefaultsatlists" />
+				<listentry caption="Yes, do another manual scan now" step="manualscan" />
+			</list>
+		</step>
+                <step id="finisheddefaultsatlists">
+			<text value="Do you want to enable the parental control feature on your reciver?" />
+			<list>
+				<listentry caption="Yes" step="parentalsetup" />
+				<listentry caption="No" step="end" />
+			</list>
+			<code pos="after">
+if self["list"].index == 0:
+	config.ParentalControl.configured.value = True
+else:
+	config.ParentalControl.configured.value = False
+config.ParentalControl.configured.save()
 			</code>
 		</step>
-		<step id="plugins">
-			<condition>
-self.condition = config.misc.installwizard.hasnetwork.value and config.misc.installwizard.ipkgloaded.value
-			</condition>
-			<text value="Do you want to install Plugins?" />
-			<config screen="InstallWizard" module="InstallWizard" args="2" type="ConfigList" />
+		<step id="parentalsetup">
+			<text value="You need to set a PIN code and hide it from your children.\n\nDo you want to set the pin now?" />
+			<list>
+				<listentry caption="No" step="warnpin" />
+				<listentry caption="Yes" step="finishparentalsetup" />
+			</list>
+			<!--code pos="after">
+from ParentalControlSetup import ParentalControlChangePin
+if self["list"].index == 0:
+	self.session.open(ParentalControlChangePin, config.ParentalControl.servicepin[0], _("parental control pin"))
+			</code-->
+		</step>
+		<step id="warnpin">
+			<text value="Please be aware, that anyone can disable the parental control, if you have not set a PIN." />
+		</step>
+		<step id="finishparentalsetup">
 			<code>
-self.clearSelectedKeys()
-self.selectKey("OK")
+if config.ParentalControl.setuppin.value == "aaaa":
+	config.ParentalControl.setuppinactive.value = False
+else:
+	config.ParentalControl.setuppinactive.value = True
+config.ParentalControl.setuppinactive.save()
+config.ParentalControl.servicepinactive.value = True
+config.ParentalControl.servicepinactive.save()
+config.ParentalControl.setuppin.value = config.ParentalControl.servicepin[0].value
+config.ParentalControl.setuppin.save()
 			</code>
+
+			<text value="After the start wizard is completed, you need to protect single services. Refer to your STB's manual on how to do that." />
+
 		</step>
 		<step id="end" laststep="true">
-			<text value="Thank you for using the wizard. Your receiver is now ready for use.\nPress OK to start using your receiver." />
-			<code>
-self.clearSelectedKeys()
-self.selectKey("OK")
-			</code>
+			<condition>
+self.condition = self.isLastWizard
+			</condition>
+			<text value="Thank you for using the wizard. Your box is now ready to use.\nPlease press OK to start using your STB." />
+
 		</step>
 </wizard>
