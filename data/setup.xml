@@ -9,14 +9,14 @@
 		<item level="0" text="Setup mode" description="Configure which access level to use for the configuration menu. Expert level gives access to all items.">config.usage.setup_level</item>
 		<item level="1" text="Sort order for menu entries" description="This option allows you to hide and sort menu entries. When selecting user you can change order and hide menu items via the blue button">config.usage.menu_sort_mode</item>
 		<item level="1" text="Show menu paths" description="This option allows you to show menu paths.">config.usage.menu_path</item>
-		<item level="0" text="Show menu numbers" description="This option allows you to show menu number quick links.">config.usage.menu_show_numbers</item>
-		<item level="2" text="Show softcam setup in extensions menu" description="This option allows you to add the softcam setup in the extensions menu." requires="HasSoftcamInstalled">config.misc.softcam_setup.extension_menu</item>
+                <item level="0" text="Show menu numbers" description="This option allows you to show menu number quick links.">config.usage.menu_show_numbers</item>
 		<item level="1" text="Zap mode" requires="ZapMode" description="Configure the way in which the receiver changes channels.">config.misc.zapmode</item>
-		<item level="2" text="Enable teletext caching" description="When enabled, teletext pages will be cached, allowing faster access.">config.usage.enable_tt_caching</item>
+		<item level="1" text="History buttons mode" description="Configure the function of the &lt;  &gt; buttons.">config.usage.historymode</item>
+		<item level="0" text="Enable teletext caching" description="When enabled, teletext pages will be cached, allowing faster access.">config.usage.enable_tt_caching</item>
 		<item level="1" text="12V output" description="12V output" requires="12V_Output.">config.usage.output_12V</item>
-		<item level="1" text="Alternative services tuner priority" description="Configure which tuner type will be preferred when the same service is available on different types of tuners. Choose 'no priority' to try each alternative one by one regardless of the tuner type.">config.usage.alternatives_priority</item>
+		<item level="1" text="Alternative services tuner priority" description="Configure which tuner type will be preferred, when the same service is available on different types of tuners. Choose 'no priority' to try each alternative one by one independent from tuner type.">config.usage.alternatives_priority</item>
 		<item level="1" text="Enable fallback remote receiver" description="Enable remote enigma2 receiver to be tried to tune into services that cannot be tuned into locally (e.g. tuner is occupied or service type is unavailable on the local tuner. Specify complete URL including http:// and port number (normally ...:8001), e.g. http://second_box:8001.">config.usage.remote_fallback_enabled</item>
-		<item level="1" text="Fallback remote receiver URL" configcondition="config.usage.remote_fallback_enabled" description="URL of fallback remote receiver">config.usage.remote_fallback</item>
+		<item level="1" text="Fallback remote receiver URL" description="URL of fallback remote receiver">config.usage.remote_fallback</item>
 		<item level="1" text="Preferred tuner" description="Configure which tuner will be preferred, when more than one tuner is available. If set to 'auto' the system will give priority to the tuner having the lowest number of channels/satellites.">config.usage.frontend_priority</item>
 		<item level="2" text="Preferred tuner DVB-S" description="When enabled, this setting has more weight than 'Preferred tuner'." requires="DVB-S_priority_tuner_available">config.usage.frontend_priority_dvbs</item>
 		<item level="2" text="Preferred tuner DVB-T" description="When enabled, this setting has more weight than 'Preferred tuner'." requires="DVB-T_priority_tuner_available">config.usage.frontend_priority_dvbt</item>
@@ -32,7 +32,7 @@
 		<item level="2" text="Include AIT in http streams" description="When enabled, AIT data will be included in http streams. This allows a client receiver to use HbbTV.">config.streaming.stream_ait</item>
 		<item level="2" text="Include ECM in http streams" description="When enabled, ECM data will be included in http streams. This allows a client receiver to do the descrambling.">config.streaming.stream_ecm</item>
 		<item level="2" text="Descramble sending http streams" description="When enabled, http streams are descrambled on the server side. The (remote) client receiver does not have to do descrambling. Default on.">config.streaming.descramble</item>
-		<item level="2" text="Descramble receiving http streams" requires="HasOfflineDecoding" description="When enabled, always descramble receiving http streams. This takes up more resources (descrambling demuxers), only enable if necessary. Individual streams are always descrambled if 0x100 is added to the service type, regardless of this setting. Default off.">config.streaming.descramble_client</item>
+		<item level="2" text="Descramble receiving http streams" description="When enabled, always descramble receiving http streams. This takes up more resources (descrambling demuxers), only enable if necessary. Individual streams are always descrambled if 0x100 is added to the service type, regardless of this setting. Default off.">config.streaming.descramble_client</item>
 		<item level="2" text="Require authentication for http streams" description="When enabled, authentication is required to watch http streams.">config.streaming.authentication</item>
 		<item level="2" text="Fan operation" description="Configure how the fan should operate" requires="Fan">config.usage.fan</item>
 		<item level="2" text="Fan speed" description="Configure the speed of the fan" requires="FanPWM">config.usage.fanspeed</item>
@@ -47,11 +47,11 @@
 	<setup key="userinterface" title="User interface">
 		<item level="1" text="Show animation while busy" description="Show busy indicator when the system is busy.">config.usage.show_spinner</item>
 		<item level="1" text="Show positioner movement" description="Configure whether or not an icon should be shown when your motorized dish is moving.">config.usage.showdish</item>
-		<item level="1" text="Show positioner position" description="Configure whether or not a rotor position will be displayed on the infobar">config.misc.showrotorposition</item>
+		<item level="1" text="Show positioner position" description="Configure whether or not an rotor position will be displayed on infobar">config.misc.showrotorposition</item>
 		<item level="1" text="Enable multiple bouquets" description="When enabled, services may be grouped in multiple bouquets.">config.usage.multibouquet</item>
 		<item level="1" text="Multi-EPG bouquet selection" description="Enable bouquet selection in multi-EPG">config.usage.multiepg_ask_bouquet</item>
 		<item level="0" text="Alternative numbering mode" description="When enabled, channel numbering will start at '1' for each bouquet.">config.usage.alternative_number_mode</item>
-		<item level="2" text="Hide number markers" description="When enabled, number markers will be hidden.">config.usage.hide_number_markers</item>
+		<item level="2" text="Hide number markers" description="When enabled, number markers will be hiden.">config.usage.hide_number_markers</item>
 		<item level="2" text="Show channel numbers in channel selection" description="When enabled, show channel numbers in the channel selection screen.">config.usage.show_channel_numbers_in_servicelist</item>
 		<item level="1" text="Show event-progress in channel selection" description="Set the type of the progress indication in the channel selection screen.">config.usage.show_event_progress_in_servicelist</item>
 		<item level="2" text="Show service type icons" description="Configure if and how service type icons will be shown in the channel selection list.">config.usage.servicetype_icon_mode</item>
@@ -72,7 +72,9 @@
 		<item level="1" text="Automatically start timeshift after" description="When enabled, timeshift starts automatically in background after specified time.">config.usage.timeshift_start_delay</item>
 		<item level="1" text="Show warning when timeshift is stopped" description="When enabled, a warning will be displayed and the user will get an option to stop or to continue the timeshift.">config.usage.check_timeshift</item>
 		<item level="1" text="Position of completed timers in timerlist" description="Configure where completed timers show up in the timer list.">config.usage.timerlist_finished_timer_position</item>
-		<item level="0" text="Info bar timeout" description="Configure for how long the infobar will remain visible after activation.">config.usage.infobar_timeout</item>
+		<item level="0" text="Enable infobar fade-out" description="Fade the infobar when hiding">config.usage.show_infobar_do_dimming</item>
+ 		<item level="0" text="Infobar fade-out speed" description="Configure the infobar fading speed">config.usage.show_infobar_dimming_speed</item>
+		<!--item level="0" text="Info bar timeout" description="Configure for how long the infobar will remain visible after activation.">config.usage.infobar_timeout</item-->
 		<item level="2" text="Show infobar on channel change" description="When enabled, the infobar will be displayed when changing channels.">config.usage.show_infobar_on_zap</item>
 		<item level="2" text="Show infobar on skip forward/backward" description="When enabled, the infobar will be displayed when skipping forwards/backwards during media playback.">config.usage.show_infobar_on_skip</item>
 		<item level="2" text="Show infobar on event change" description="When enabled, the infobar will be displayed when a new event starts.">config.usage.show_infobar_on_event_change</item>
@@ -80,8 +82,8 @@
 		<item level="1" text="Show background in radio mode" description="When enabled, a radio background image will be visible while listening to a radio channel.">config.misc.showradiopic</item>
 		<item level="1" text="Show screensaver" description="Configure the duration in minutes for the screensaver.">config.usage.screen_saver</item>
 		<item level="2" text="Hide zap errors" description="When enabled, error messages related to zapping will not be shown.">config.usage.hide_zap_errors</item>
+		<item level="2" text="Hide CI messages" description="When enabled, error messages related to the Common Interface module will not be shown.">config.usage.hide_ci_messages</item>
 		<item level="2" text="Show crypto info in infobar" description="When enabled, encryption info will be shown in the infobar (when supported by the skin).">config.usage.show_cryptoinfo</item>
-		<item level="2" text="Show picons in display" description="Configure if service picons will be shown in display (when supported by the skin)." requires="HasFrontDisplayPicon">config.usage.show_picon_in_display</item>
 		<item level="2" text="Infobar frontend data source" description="Configure the source of the frontend data as shown on the infobars. 'Settings' is as stored on the settings. 'Tuner' is as reported by the tuner.">config.usage.infobar_frontend_source</item>
 		<item level="2" text="Show SNR percentage instead of dB value" description="By default, SNR will be shown in dB (when supported by the tuner). This setting forces SNR to be shown as a percentage instead.">config.usage.swap_snr_on_osd</item>
 		<item level="2" text="Show EIT now/next in infobar" description="When enabled, display the EIT now/next eventdata in infobar. When disabled, display now/next eventdata from the EPG cache instead.">config.usage.show_eit_nownext</item>
@@ -111,7 +113,7 @@
 		<item level="2" text="Subtitle delay when timing lacks" description="Configure the subtitle delay when timing information is not available.">config.subtitles.subtitle_noPTSrecordingdelay</item>
 		<item level="0" text="Yellow DVB subtitles" description="When enabled, graphical DVB subtitles will be displayed in yellow, instead of the original color.">config.subtitles.dvb_subtitles_yellow</item>
 		<item level="2" text="Use original DVB subtitle position" description="When enabled, graphical DVB subtitles will be displayed at their original position.">config.subtitles.dvb_subtitles_original_position</item>
-		<item level="2" text="Center DVB subtitles" description="When enabled, graphical DVB subtitles will be centered horizontally.">config.subtitles.dvb_subtitles_centered</item>
+                <item level="2" text="Center DVB subtitles" description="When enabled, graphical DVB subtitles will be centered horizontally.">config.subtitles.dvb_subtitles_centered</item>
 		<item level="2" text="Subtitle delay when timing is bad" description="Configure an additional delay to improve subtitle synchronisation.">config.subtitles.subtitle_bad_timing_delay</item>
 		<item level="2" text="DVB subtitle black transparency" description="Configure the transparency of the black background of graphical DVB subtitles.">config.subtitles.dvb_subtitles_backtrans</item>
 		<item level="2" text="External subtitle color" description="Configure the color of the external subtitles, alternative (normal in white, italic in yellow, bold in cyan, underscore in green), white or yellow.">config.subtitles.pango_subtitle_colors</item>
@@ -122,7 +124,7 @@
 		<item level="2" text="Automatically turn on external subtitles" description="When enabled, external subtitles will be always turned on for playback movie.">config.subtitles.pango_autoturnon</item>
 	</setup>
 	<setup key="autolanguagesetup" title="Auto language selection">
-		<item level="0" text="Audio language selection 1" description="Configure the first audio language (highest priority).">config.autolanguage.audio_autoselect1</item>
+		<item level="1" text="Audio language selection 1" description="Configure the first audio language (highest priority).">config.autolanguage.audio_autoselect1</item>
 		<item level="0" text="Audio language selection 2" description="Configure the second audio language.">config.autolanguage.audio_autoselect2</item>
 		<item level="1" text="Audio language selection 3" description="Configure the third audio language.">config.autolanguage.audio_autoselect3</item>
 		<item level="1" text="Audio language selection 4" description="Configure the fourth audio language.">config.autolanguage.audio_autoselect4</item>
@@ -172,7 +174,7 @@
 		<item level="2" text="Background delete speed" description="Configure the speed of the background deletion process. Lower speed will consume less hard disk drive performance.">config.misc.erase_speed</item>
 		<item level="2" text="Always include ECM in recordings" description="Always include ECM messages in recordings. This overrides the individual timer settings globally. It allows recordings to be always decrypted afterwards (sometimes called offline decoding), if supported by your receiver. Default: off.">config.recording.always_ecm</item>
 		<item level="2" text="Never decrypt while recording" description="Never decrypt the content while recording. This overrides the individual timer settings globally. If enabled, recordings are stored in crypted presentation and must be decrypted afterwards (sometimes called offline decoding). Default: off.">config.recording.never_decrypt</item>
-		<item level="2" text="Offline decode delay (ms)" requires="HasOfflineDecoding" description="Configure the offline decoding delay in milliseconds. The configured delay is observed at each control word parity change.">config.recording.offline_decode_delay</item>
+		<item level="2" text="Offline decode delay (ms)" description="Configure the offline decoding delay in milliseconds. The configured delay is observed at each control word parity change.">config.recording.offline_decode_delay</item>
 	</setup>
 	<setup key="harddisk" title="Hard disk setup" >
 		<item level="0" text="Hard disk standby after" description="Configure the hard disk drive to go to standby after the specified idle time.">config.usage.hdd_standby</item>
@@ -203,7 +205,7 @@
 	</setup>
 	<setup key="lcd" title="Display setup" requires="FrontpanelDisplay">
 		<item level="0" text="Clone TV screen to LCD" description="Shows live tv or informations on LCD." requires="LcdLiveTV">config.lcd.showTv</item>
-		<item level="0" text="Clone TV screen to LCD mode" description="Selects the mode how live tv should be shown on the LCD." requires="LcdLiveTVMode">config.usage.LcdLiveTVMode</item>
+                <item level="0" text="Clone TV screen to LCD mode" description="Selects the mode how live tv should be shown on the LCD." requires="LcdLiveTVMode">config.usage.LcdLiveTVMode</item>
 		<item level="0" text="Brightness" description="Configure the brightness level of the front panel display.">config.lcd.bright</item>
 		<item level="0" text="Contrast" description="Configure the contrast level of the front panel display.">config.lcd.contrast</item>
 		<item level="0" text="Standby" description="Configure the brightness level of the front panel display during standby.">config.lcd.standby</item>
@@ -213,7 +215,6 @@
 		<item level="2" text="Initial scroll delay" description="Delay in miliseconds before start of scrolling text on display." requires="VFD_initial_scroll_delay">config.usage.vfd_initial_scroll_delay</item>
 		<item level="2" text="Final scroll delay" description="Delay in miliseconds after finish scrolling text on display." requires="VFD_final_scroll_delay">config.usage.vfd_final_scroll_delay</item>
 		<item level="0" text="Power on display" description="This option allows you to power off the display." requires="PowerOffDisplay">config.usage.powerOffDisplay</item>
-		<item level="2" text="Show symbols on display" description="This option allows you to show all symbols on the display." requires="LCDshow_symbols">config.usage.lcd_show_symbols</item>
 		<item level="2" text="Use 12 characters display mode" description="If enabled, display shows 12 chars instead 8, but in latin-1/translit only." requires="hasXcoreVFD">config.usage.toggle12to8characterVFD</item>
 	</setup>
 	<setup key="satconfig" title="Satellite dish setup">
