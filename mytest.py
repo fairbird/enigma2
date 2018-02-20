@@ -6,8 +6,6 @@ if os.path.isfile("/usr/lib/enigma2/python/enigma.zip"):
 from Tools.Profile import profile, profile_final
 profile("PYTHON_START")
 
-# Don't remove this line. It may seem to do nothing, but if removed,
-# it will break output redirection for crash logs.
 import Tools.RedirectOutput
 import enigma
 import eConsoleImpl
@@ -17,16 +15,11 @@ enigma.eSocketNotifier = eBaseImpl.eSocketNotifier
 enigma.eConsoleAppContainer = eConsoleImpl.eConsoleAppContainer
 
 from traceback import print_exc
-
-profile("SetupDevices")
-import Components.SetupDevices
-Components.SetupDevices.InitSetupDevices()
-
 profile("SimpleSummary")
 from Screens import InfoBar
 from Screens.SimpleSummary import SimpleSummary
 
-from sys import stdout
+from sys import stdout, exc_info
 
 profile("Bouquets")
 from Components.config import config, configfile, ConfigText, ConfigYesNo, ConfigInteger, NoSave
@@ -120,7 +113,7 @@ def dump(dir, p = ""):
 			dump(val, p + "(dict)/" + entry)
 	if hasattr(dir, "__dict__"):
 		for name, value in dir.__dict__.items():
-			if str(value) not in had:
+			if not had.has_key(str(value)):
 				had[str(value)] = 1
 				dump(value, p + "/" + str(name))
 			else:
@@ -342,25 +335,25 @@ class PowerKey:
 	def __init__(self, session):
 		self.session = session
 		globalActionMap.actions["power_down"] = lambda *args: None
-		globalActionMap.actions["power_up"] = self.powerup
-		globalActionMap.actions["power_long"] = self.powerlong
-		globalActionMap.actions["deepstandby"] = self.shutdown # frontpanel long power button press
-		globalActionMap.actions["discrete_off"] = self.standby
+ 		globalActionMap.actions["power_up"] = self.powerup
+ 		globalActionMap.actions["power_long"] = self.powerlong
+ 		globalActionMap.actions["deepstandby"] = self.shutdown # frontpanel long power button press
+ 		globalActionMap.actions["discrete_off"] = self.standby
 
 	def shutdown(self):
 		print "PowerOff - Now!"
 		if not Screens.Standby.inTryQuitMainloop and self.session.current_dialog and self.session.current_dialog.ALLOW_SUSPEND:
 			self.session.open(Screens.Standby.TryQuitMainloop, 1)
-
+			
 	def powerup(self):
 		self.doAction(config.misc.hotkey.power.value)
 
 	def powerlong(self):
 		if not(Screens.Standby.inTryQuitMainloop or (self.session.current_dialog and not self.session.current_dialog.ALLOW_SUSPEND)):
-			self.doAction(config.misc.hotkey.power_long.value)
-
-	def doAction(self, selected):
-		if selected:
+ 			self.doAction(config.misc.hotkey.power_long.value)
+ 
+ 	def doAction(self, selected):
+ 		if selected:
 			selected = selected.split("/")
 			if selected[0] == "Module":
 				try:
@@ -524,6 +517,10 @@ profile("InputDevice")
 import Components.InputDevice
 Components.InputDevice.InitInputDevices()
 import Components.InputHotplug
+
+profile("SetupDevices")
+import Components.SetupDevices
+Components.SetupDevices.InitSetupDevices()
 
 profile("AVSwitch")
 import Components.AVSwitch
