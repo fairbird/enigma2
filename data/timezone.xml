@@ -45,7 +45,7 @@
 	<zone name="(GMT+02:00) Riga, Tallinn, Vilnius" zone="Europe/Athens" />
 	<zone name="(GMT+03:00) Istanbul" zone="Europe/Istanbul" />
 	<zone name="(GMT+03:00) Baghdad" zone="Asia/Baghdad" />
-	<zone name="(GMT+03:00) Kuwait, Riyadh" zone="Asia/Riyadh" />
+	<zone name="(GMT+03:00) Kuwait, Riyadh, Manama" zone="Asia/Riyadh" />
 	<zone name="(GMT+03:00) Minsk" zone="Europe/Moscow" />
 	<zone name="(GMT+03:00) Moscow, St. Petersburg, Volgograd" zone="Europe/Moscow" />
 	<zone name="(GMT+03:00) Nairobi" zone="Africa/Nairobi" />
