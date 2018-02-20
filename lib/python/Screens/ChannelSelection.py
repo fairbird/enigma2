@@ -2583,3 +2583,124 @@ class SimpleChannelSelection(ChannelSelectionBase, SelectionEventInfo):
 
 	def getMutableList(self, root=None):
 		return None
+
+class HistoryZapSelector(Screen):
+	def __init__(self, session, items=None, sel_item=0, mark_item=0, invert_items=False, redirect_buttons=False, wrap_around=True):
+		if not items: items = []
+			Screen.__init__(self, session)
+			self.redirectButton = redirect_buttons
+			self.invertItems = invert_items
+		if self.invertItems:
+			self.currentPos = len(items) - sel_item - 1
+		else:
+			self.currentPos = sel_item
+		self["actions"] = ActionMap(["OkCancelActions", "InfobarCueSheetActions"],
+					    {
+						    "ok": self.okbuttonClick,
+						    "cancel": self.cancelClick,
+						    "jumpPreviousMark": self.prev,
+						    "jumpNextMark": self.next,
+						    "toggleMark": self.okbuttonClick,
+					    })
+		self.setTitle(_("History zap..."))
+		self.list = []
+		cnt = 0
+		serviceHandler = eServiceCenter.getInstance()
+		for x in items:
+			info = serviceHandler.info(x[-1])
+			if info:
+				orbpos = self.getOrbitalPos(ServiceReference(x[1]))
+				serviceName = info.getName(x[-1])
+				if serviceName is None:
+					serviceName = ""
+				eventName = ""
+				descriptionName = ""
+				durationTime = ""
+				# if config.plugins.SetupZapSelector.event.value != "0":
+				event = info.getEvent(x[-1])
+				if event:
+					eventName = event.getEventName()
+					if eventName is None:
+						eventName = ""
+					else:
+						eventName = eventName.replace('(18+)', '').replace('18+', '').replace('(16+)', '').replace('16+', '').replace('(12+)', '').replace('12+', '').replace('(7+)', '').replace('7+', '').replace('(6+)', '').replace('6+', '').replace('(0+)', '').replace('0+', '')
+						# if config.plugins.SetupZapSelector.event.value == "2":
+						descriptionName = event.getShortDescription()
+						if descriptionName is None or descriptionName == "":
+							descriptionName = event.getExtendedDescription()
+							if descriptionName is None:
+								descriptionName = ""
+								# if config.plugins.SetupZapSelector.duration.value:
+								begin = event.getBeginTime()
+								if begin is not None:
+									end = begin + event.getDuration()
+									remaining = (end - int(time())) / 60
+									prefix = ""
+									if remaining > 0:
+										prefix = "+"
+									local_begin = localtime(begin)
+									local_end = localtime(end)
+									durationTime = _("%02d.%02d - %02d.%02d (%s%d min)") % (local_begin[3],local_begin[4],local_end[3],local_end[4],prefix, remaining)
+			png = ""
+			picon = getPiconName(str(ServiceReference(x[1])))
+			if picon != "":
+				png = loadPNG(picon)
+			if self.invertItems:
+				self.list.insert(0, (x[1], cnt == mark_item and "»" or "", x[0], eventName, descriptionName, durationTime, png, orbpos))
+			else:
+				self.list.append((x[1], cnt == mark_item and "»" or "", x[0], eventName, descriptionName, durationTime, png, orbpos))
+			cnt += 1
+		self["menu"] = List(self.list, enableWrapAround=wrap_around)
+		self.onShown.append(self.__onShown)
+
+	def __onShown(self):
+		self["menu"].index = self.currentPos
+
+	def prev(self):
+		if self.redirectButton:
+			self.down()
+		else:
+			self.up()
+
+	def next(self):
+		if self.redirectButton:
+			self.up()
+		else:
+			self.down()
+
+	def up(self):
+		self["menu"].selectPrevious()
+
+	def down(self):
+		self["menu"].selectNext()
+
+	def getCurrent(self):
+		cur = self["menu"].current
+		return cur and cur[0]
+
+	def okbuttonClick(self):
+		self.close(self.getCurrent())
+
+	def cancelClick(self):
+		self.close(None)
+
+	def getOrbitalPos(self, ref):
+		refstr = None
+		if hasattr(ref, 'sref'):
+			refstr = str(ref.sref)
+		else:
+			refstr = str(ref)
+		refstr = refstr and GetWithAlternative(refstr)
+		print 'refstr:',refstr
+		if '%3a//' in refstr:
+			return "%s" % _("Stream")
+		op = int(refstr.split(':', 10)[6][:-4] or "0",16)
+		if op == 0xeeee:
+			return "%s" % _("DVB-T")
+		if op == 0xffff:
+			return "%s" % _("DVB-C")
+		direction = 'E'
+		if op > 1800:
+			op = 3600 - op
+			direction = 'W'
+		return ("%d.%d\xc2\xb0%s") % (op // 10, op % 10, direction)
