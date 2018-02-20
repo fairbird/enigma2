@@ -1,5 +1,6 @@
 import os
-from enigma import eEPGCache, getBestPlayableServiceReference, eStreamServer, eServiceReference, iRecordableService, quitMainloop, eActionMap, setPreferredTuner
+from enigma import eEPGCache, getBestPlayableServiceReference, eStreamServer,\
+	eServiceReference, iRecordableService, quitMainloop, eActionMap, setPreferredTuner
 
 from Components.config import config
 from Components.UsageConfig import defaultMoviePath
@@ -46,9 +47,12 @@ def parseEvent(ev, description = True):
 	eit = ev.getEventId()
 	begin -= config.recording.margin_before.value * 60
 	end += config.recording.margin_after.value * 60
-	return (begin, end, name, description, eit)
+	return begin, end, name, description, eit
 
 class AFTEREVENT:
+	def __init__(self):
+ 		pass
+
 	NONE = 0
 	STANDBY = 1
 	DEEPSTANDBY = 2
@@ -184,15 +188,15 @@ class RecordTimerEntry(timer.TimerEntry, object):
 						if config.usage.recording_frontend_priority_dvbt.value != config.usage.frontend_priority.value:
 							self.setAdvancedPriorityFrontend = config.usage.recording_frontend_priority_dvbt.value
 					if SystemInfo["ATSC_priority_tuner_available"] and config.usage.recording_frontend_priority_atsc.value != "-2":
-						if config.usage.recording_frontend_priority_atsc.value != config.usage.frontend_priority.value:
-							self.setAdvancedPriorityFrontend = config.usage.recording_frontend_priority_atsc.value
+ 						if config.usage.recording_frontend_priority_atsc.value != config.usage.frontend_priority.value:
+ 							self.setAdvancedPriorityFrontend = config.usage.recording_frontend_priority_atsc.value
 				elif type_service == 0xFFFF:
 					if SystemInfo["DVB-C_priority_tuner_available"] and config.usage.recording_frontend_priority_dvbc.value != "-2":
 						if config.usage.recording_frontend_priority_dvbc.value != config.usage.frontend_priority.value:
 							self.setAdvancedPriorityFrontend = config.usage.recording_frontend_priority_dvbc.value
 					if SystemInfo["ATSC_priority_tuner_available"] and config.usage.recording_frontend_priority_atsc.value != "-2":
-						if config.usage.recording_frontend_priority_atsc.value != config.usage.frontend_priority.value:
-							self.setAdvancedPriorityFrontend = config.usage.recording_frontend_priority_atsc.value
+ 						if config.usage.recording_frontend_priority_atsc.value != config.usage.frontend_priority.value:
+ 							self.setAdvancedPriorityFrontend = config.usage.recording_frontend_priority_atsc.value
 				else:
 					if SystemInfo["DVB-S_priority_tuner_available"] and config.usage.recording_frontend_priority_dvbs.value != "-2":
 						if config.usage.recording_frontend_priority_dvbs.value != config.usage.frontend_priority.value:
@@ -230,11 +234,11 @@ class RecordTimerEntry(timer.TimerEntry, object):
 		if config.recording.ascii_filenames.value:
 			filename = ASCIItranslit.legacyEncode(filename)
 		if not self.dirname:
-			dirname = findSafeRecordPath(defaultMoviePath())
+			dirname = (defaultMoviePath())
 		else:
-			dirname = findSafeRecordPath(self.dirname)
+			dirname = (self.dirname)
 			if dirname is None:
-				dirname = findSafeRecordPath(defaultMoviePath())
+				dirname = (defaultMoviePath())
 				self.dirnameHadToFallback = True
 		if not dirname:
 			return None
@@ -779,10 +783,7 @@ class RecordTimer(timer.Timer):
 				self.cleanupDisabled()
 				# Remove old timers as set in config
 				self.cleanupDaily(config.recording.keep_timers.value)
-				# If we want to keep done timers, re-insert in the active list
-				if config.recording.keep_timers.value > 0 and w not in self.processed_timers:
-					insort(self.processed_timers, w)
-
+				insort(self.processed_timers, w)
 		self.stateChanged(w)
 
 	def checkWrongRunningTimers(self):
@@ -800,6 +801,8 @@ class RecordTimer(timer.Timer):
 		return False
 
 	def loadTimer(self):
+		if not Directories.fileExists(self.Filename):
+			return
 		try:
 			doc = xml.etree.cElementTree.parse(self.Filename)
 		except SyntaxError:
@@ -837,49 +840,7 @@ class RecordTimer(timer.Timer):
 
 
 	def saveTimer(self):
-		#root_element = xml.etree.cElementTree.Element('timers')
-		#root_element.text = "\n"
-
-		#for timer in self.timer_list + self.processed_timers:
-			# some timers (instant records) don't want to be saved.
-			# skip them
-			#if timer.dontSave:
-				#continue
-			#t = xml.etree.cElementTree.SubElement(root_element, 'timers')
-			#t.set("begin", str(int(timer.begin)))
-			#t.set("end", str(int(timer.end)))
-			#t.set("serviceref", str(timer.service_ref))
-			#t.set("repeated", str(timer.repeated))
-			#t.set("name", timer.name)
-			#t.set("description", timer.description)
-			#t.set("afterevent", str({
-			#	AFTEREVENT.NONE: "nothing",
-			#	AFTEREVENT.STANDBY: "standby",
-			#	AFTEREVENT.DEEPSTANDBY: "deepstandby",
-			#	AFTEREVENT.AUTO: "auto"}))
-			#if timer.eit is not None:
-			#	t.set("eit", str(timer.eit))
-			#if timer.dirname is not None:
-			#	t.set("location", str(timer.dirname))
-			#t.set("disabled", str(int(timer.disabled)))
-			#t.set("justplay", str(int(timer.justplay)))
-			#t.text = "\n"
-			#t.tail = "\n"
-
-			#for time, code, msg in timer.log_entries:
-				#l = xml.etree.cElementTree.SubElement(t, 'log')
-				#l.set("time", str(time))
-				#l.set("code", str(code))
-				#l.text = str(msg)
-				#l.tail = "\n"
-
-		#doc = xml.etree.cElementTree.ElementTree(root_element)
-		#doc.write(self.Filename)
-
-		list = []
-
-		list.append('<?xml version="1.0" ?>\n')
-		list.append('<timers>\n')
+		list = ['<?xml version="1.0" ?>\n', '<timers>\n']
 
 		for timer in self.timer_list + self.processed_timers:
 			if timer.dontSave:
@@ -1303,9 +1264,8 @@ class RecordTimer(timer.Timer):
 			for x in self.timer_list:
 				if x.setAutoincreaseEnd():
 					self.timeChanged(x)
-		if entry in self.processed_timers:
-			# now the timer should be in the processed_timers list. remove it from there.
-			self.processed_timers.remove(entry)
+		# now the timer should be in the processed_timers list. remove it from there.
+		self.processed_timers.remove(entry)
 		self.saveTimer()
 
 	def shutdown(self):
