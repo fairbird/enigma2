@@ -637,7 +637,11 @@ void eDVBCIInterfaces::recheckPMTHandlers()
 							if (tunernum != -1)
 							{
 								setInputSource(tunernum, ci_source.str());
+#ifdef DREAMBOX_DUAL_TUNER
+								ci_it->setSource(eDVBCISlot::getTunerLetterDM(tunernum));
+#else
 								ci_it->setSource(eDVBCISlot::getTunerLetter(tunernum));
+#endif
 							}
 							else
 							{
