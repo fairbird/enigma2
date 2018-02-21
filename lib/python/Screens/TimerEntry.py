@@ -7,6 +7,8 @@ from Components.ConfigList import ConfigListScreen
 from Components.MenuList import MenuList
 from Components.Sources.StaticText import StaticText
 from Components.Label import Label
+from Components.Button import Button
+from Components.Pixmap import Pixmap
 from Components.SystemInfo import SystemInfo
 from Components.UsageConfig import defaultMoviePath
 from Screens.MovieSelection import getPreferredTagEditor
@@ -15,7 +17,7 @@ from Screens.ChoiceBox import ChoiceBox
 from Screens.MessageBox import MessageBox
 from Screens.VirtualKeyBoard import VirtualKeyBoard
 from RecordTimer import AFTEREVENT
-from enigma import eEPGCache
+from enigma import eEPGCache, eServiceReference
 from time import localtime, mktime, time, strftime
 from datetime import datetime
 
@@ -27,10 +29,10 @@ class TimerEntry(Screen, ConfigListScreen):
 		self.entryDate = None
 		self.entryService = None
 
-		self["key_red"] = StaticText(_("Cancel"))
-		self["key_green"] = StaticText(_("Save"))
-		self["key_yellow"] = StaticText(_("Timer type"))
-		self["key_blue"] = StaticText("")
+		self["oktext"] = Label(_("OK"))
+		self["canceltext"] = Label(_("Cancel"))
+		self["ok"] = Pixmap()
+		self["cancel"] = Pixmap()
 
 		self.createConfig()
 
@@ -58,7 +60,6 @@ class TimerEntry(Screen, ConfigListScreen):
 		justplay = self.timer.justplay
 		always_zap = self.timer.always_zap
 		zap_wakeup = self.timer.zap_wakeup
-		pipzap = self.timer.pipzap
 		rename_repeat = self.timer.rename_repeat
 		conflict_detection = self.timer.conflict_detection
 		config.movielist.videodirs.load()
@@ -89,9 +90,9 @@ class TimerEntry(Screen, ConfigListScreen):
 				repeated = "daily"
 			else:
 				repeated = "user"
-				if day.count(1) == 1:
-					repeated = "weekly"
-					weekday = day.index(1)
+				if day.count("1") == 1:
+					repeated = "weekday"
+					weekday = day.index("1")
 		else: # once
 			type = "once"
 			repeated = None
@@ -118,7 +119,7 @@ class TimerEntry(Screen, ConfigListScreen):
 
 		self.timerentry_repeated = ConfigSelection(default = repeated, choices = [("weekly", _("weekly")), ("daily", _("daily")), ("weekdays", _("Mon-Fri")), ("user", _("user defined"))])
 		self.timerentry_renamerepeat = ConfigYesNo(default = rename_repeat)
-		self.timerentry_pipzap = ConfigYesNo(default = pipzap)
+
 		self.timerentry_conflictdetection = ConfigYesNo(default = conflict_detection)
 
 		self.timerentry_date = ConfigDateTime(default = self.timer.begin, formatstring = _("%d.%B %Y"), increment = 86400)
@@ -196,12 +197,10 @@ class TimerEntry(Screen, ConfigListScreen):
 		self.entryZapWakeup = getConfigListEntry(_("Wakeup receiver for start timer"), self.timerentry_zapwakeup)
 		if self.timerentry_justplay.value == "zap":
 			self.list.append(self.entryZapWakeup)
-			if SystemInfo["PIPAvailable"]:
-				self.list.append(getConfigListEntry(_("Use as PiP if possible"), self.timerentry_pipzap))
 			self.list.append(self.entryShowEndTime)
-			self["key_blue"].setText(_("Wakeup type"))
-		else:
-			self["key_blue"].setText("")
+#			self["key_blue"].setText(_("Wakeup type"))
+#		else:
+#			self["key_blue"].setText("")
 		self.entryEndTime = getConfigListEntry(_("End time"), self.timerentry_endtime)
 		if self.timerentry_justplay.value != "zap" or self.timerentry_showendtime.value:
 			self.list.append(self.entryEndTime)
@@ -296,7 +295,7 @@ class TimerEntry(Screen, ConfigListScreen):
 				_("Select channel to record from"),
 				currentBouquet=True
 			)
-		elif cur == self.dirname:
+		elif config.usage.setup_level.index >= 2 and cur == self.dirname:
 			menu = [(_("Open select location"), "empty")]
 			if self.timerentry_type.value == "repeated" and self.timerentry_name.value:
 				menu.append((_("Open select location as timer name"), "timername"))
@@ -366,7 +365,6 @@ class TimerEntry(Screen, ConfigListScreen):
 		self.timer.justplay = self.timerentry_justplay.value == "zap"
 		self.timer.always_zap = self.timerentry_justplay.value == "zap+record"
 		self.timer.zap_wakeup = self.timerentry_zapwakeup.value
-		self.timer.pipzap = self.timerentry_pipzap.value
 		self.timer.rename_repeat = self.timerentry_renamerepeat.value
 		self.timer.conflict_detection = self.timerentry_conflictdetection.value
 		if self.timerentry_justplay.value == "zap":
@@ -466,14 +464,14 @@ class TimerEntry(Screen, ConfigListScreen):
 		self.timerentry_starttime.increment()
 		self["config"].invalidate(self.entryStartTime)
 		if self.timerentry_type.value == "once" and self.timerentry_starttime.value == [0, 0]:
-			self.timerentry_date.value += 86400
+			self.timerentry_date.value = self.timerentry_date.value + 86400
 			self["config"].invalidate(self.entryDate)
 
 	def decrementStart(self):
 		self.timerentry_starttime.decrement()
 		self["config"].invalidate(self.entryStartTime)
 		if self.timerentry_type.value == "once" and self.timerentry_starttime.value == [23, 59]:
-			self.timerentry_date.value -= 86400
+			self.timerentry_date.value = self.timerentry_date.value - 86400
 			self["config"].invalidate(self.entryDate)
 
 	def incrementEnd(self):
@@ -521,10 +519,10 @@ class TimerLog(Screen):
 		self["loglist"] = MenuList(self.list)
 		self["logentry"] = Label()
 
-		self["key_red"] = StaticText(_("Delete entry"))
-		self["key_green"] = StaticText("")
-		self["key_yellow"] = StaticText("")
-		self["key_blue"] = StaticText(_("Clear log"))
+		self["key_red"] = Button(_("Delete entry"))
+		self["key_green"] = Button("")
+		self["key_yellow"] = Button("")
+		self["key_blue"] = Button(_("Clear log"))
 
 		self.onShown.append(self.updateText)
 
