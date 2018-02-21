@@ -1,130 +1,133 @@
-# -*- coding: UTF-8 -*-
 import gettext
-import locale
 import os
-
-from Tools.Directories import SCOPE_LANGUAGE, resolveFilename
+from Tools.Directories import SCOPE_LANGUAGE, resolveFilename, fileExists
+import language_cache
+Translation = [['English', 'en', 'EN'],
+ ['German', 'de', 'DE'],
+ ['Arabic', 'ar', 'AE'],
+ ['Brazilian Portuguese', 'pt_BR', 'BR'],
+ ['Catalan', 'ca', 'AD'],
+ ['Croatian', 'hr', 'HR'],
+ ['Czech', 'cs', 'CZ'],
+ ['Danish', 'da', 'DK'],
+ ['Dutch', 'nl', 'NL'],
+ ['Estonian', 'et', 'EE'],
+ ['Finnish', 'fi', 'FI'],
+ ['French', 'fr', 'FR'],
+ ['Greek', 'el', 'GR'],
+ ['Hebrew', 'he', 'IL'],
+ ['Hungarian', 'hu', 'HU'],
+ ['Lithuanian', 'lt', 'LT'],
+ ['Latvian', 'lv', 'LV'],
+ ['Icelandic', 'is', 'IS'],
+ ['Italian', 'it', 'IT'],
+ ['Norwegian', 'no', 'NO'],
+ ['Persian', 'fa', 'IR'],
+ ['Polish', 'pl', 'PL'],
+ ['Portuguese', 'pt', 'PT'],
+ ['Russian', 'ru', 'RU'],
+ ['Serbian', 'sr', 'YU'],
+ ['Slovakian', 'sk', 'SK'],
+ ['Slovenian', 'sl', 'SI'],
+ ['Spanish', 'es', 'ES'],
+ ['Swedish', 'sv', 'SE'],
+ ['Turkish', 'tr', 'TR'],
+ ['Ukrainian', 'uk', 'UA'],
+ ['Frisian', 'fy', 'x-FY']]
 
 class Language:
-	def __init__(self):
-		gettext.install('enigma2', resolveFilename(SCOPE_LANGUAGE, ""), unicode=0, codeset="utf-8")
-		gettext.bindtextdomain("enigma2", resolveFilename(SCOPE_LANGUAGE))
-		gettext.textdomain("enigma2")
-		self.activeLanguage = 0
-		self.catalog = None
-		self.lang = {}
-		self.langlist = []
-		# FIXME make list dynamically
-		# name, iso-639 language, iso-3166 country. Please don't mix language&country!
-		self.addLanguage("Arabic",	"ar", "AE", "ISO-8859-15")
-		self.addLanguage("Български",	"bg", "BG", "ISO-8859-15")
-		self.addLanguage("Català",	"ca", "AD", "ISO-8859-15")
-		self.addLanguage("Česky",	"cs", "CZ", "ISO-8859-15")
-		self.addLanguage("Dansk",	"da", "DK", "ISO-8859-15")
-		self.addLanguage("Deutsch",	"de", "DE", "ISO-8859-15")
-		self.addLanguage("Ελληνικά",	"el", "GR", "ISO-8859-7")
-		self.addLanguage("English",	"en", "EN", "ISO-8859-15")
-		self.addLanguage("Español",	"es", "ES", "ISO-8859-15")
-		self.addLanguage("Eesti",	"et", "EE", "ISO-8859-15")
-		self.addLanguage("فارسی",	"fa", "IR", "UTF-8")
-		self.addLanguage("Suomi",	"fi", "FI", "ISO-8859-15")
-		self.addLanguage("Français",	"fr", "FR", "ISO-8859-15")
-		self.addLanguage("Frysk",	"fy", "NL", "ISO-8859-15")
-		self.addLanguage("Hebrew",	"he", "IL", "ISO-8859-15")
-		self.addLanguage("TChinese",	"hk", "HK", "UTF-8")
-		self.addLanguage("Hrvatski",	"hr", "HR", "ISO-8859-15")
-		self.addLanguage("Magyar",	"hu", "HU", "ISO-8859-15")
-		self.addLanguage("Indonesian",	"id", "ID", "ISO-8859-15")
-		self.addLanguage("Íslenska",	"is", "IS", "ISO-8859-15")
-		self.addLanguage("Italiano",	"it", "IT", "ISO-8859-15")
-		self.addLanguage("Kurdish",	"ku", "KU", "ISO-8859-15")
-		self.addLanguage("Lietuvių",	"lt", "LT", "ISO-8859-15")
-		self.addLanguage("Latviešu",	"lv", "LV", "ISO-8859-15")
-		self.addLanguage("Nederlands",	"nl", "NL", "ISO-8859-15")
-		self.addLanguage("Norsk Bokmål","nb", "NO", "ISO-8859-15")
-		self.addLanguage("Norsk Nynorsk", "nn", "NO", "ISO-8859-15")
-		self.addLanguage("Polski",	"pl", "PL", "ISO-8859-15")
-		self.addLanguage("Português",	"pt", "PT", "ISO-8859-15")
-		self.addLanguage("Português do Brasil","pt", "BR", "ISO-8859-15")
-		self.addLanguage("Romanian",	"ro", "RO", "ISO-8859-15")
-		self.addLanguage("Русский",	"ru", "RU", "ISO-8859-15")
-		self.addLanguage("Slovensky",	"sk", "SK", "ISO-8859-15")
-		self.addLanguage("Slovenščina",	"sl", "SI", "ISO-8859-15")
-		self.addLanguage("Srpski",	"sr", "YU", "ISO-8859-15")
-		self.addLanguage("Svenska",	"sv", "SE", "ISO-8859-15")
-		self.addLanguage("ภาษาไทย",	"th", "TH", "ISO-8859-15")
-		self.addLanguage("Türkçe",	"tr", "TR", "ISO-8859-15")
-		self.addLanguage("Ukrainian",	"uk", "UA", "ISO-8859-15")
-		self.addLanguage("SChinese",	"zh", "CN", "UTF-8")
 
-		self.callbacks = []
+    def __init__(self):
+        self.currLangObj = gettext.install('enigma2', resolveFilename(SCOPE_LANGUAGE, ''), unicode=0, codeset='utf-8', names='ngettext')
+        self.activeLanguage = 0
+        self.lang = {}
+        self.langlist = []
+        list_dir = os.listdir('/usr/share/enigma2/po')
+        print 'Installed_lang_dir:', list_dir
+        for line in list_dir:
+            for language in Translation:
+                if line == language[1]:
+                    self.addLanguage(_(language[0]), language[1], language[2])
+                    break
 
-	def addLanguage(self, name, lang, country, encoding):
-		try:
-			self.lang[str(lang + "_" + country)] = ((name, lang, country, encoding))
-			self.langlist.append(str(lang + "_" + country))
-		except:
-			print "Language " + str(name) + " not found"
+        self.callbacks = []
 
-	def activateLanguage(self, index):
-		try:
-			if index not in self.lang:
-				print "Selected language %s does not exist, fallback to en_EN!" % index
-				index = "en_EN"
-			lang = self.lang[index]
-			print "Activating language " + lang[0]
-			self.catalog = gettext.translation('enigma2', resolveFilename(SCOPE_LANGUAGE, ""), languages=[index])
-			self.catalog.install(names=("ngettext", "pgettext"))
-			self.activeLanguage = index
-			for x in self.callbacks:
-				x()
-		except:
-			print "Error in activating language!"
-		# NOTE: we do not use LC_ALL, because LC_ALL will not set any of the categories, when one of the categories fails.
-		# We'd rather try to set all available categories, and ignore the others
-		for category in [locale.LC_CTYPE, locale.LC_COLLATE, locale.LC_TIME, locale.LC_MONETARY, locale.LC_MESSAGES, locale.LC_NUMERIC]:
-			try:
-				locale.setlocale(category, (self.getLanguage(), 'UTF-8'))
-			except:
-				pass
-		# HACK: sometimes python 2.7 reverts to the LC_TIME environment value, so make sure it has the correct value
-		os.environ["LC_TIME"] = self.getLanguage() + '.UTF-8'
-		os.environ["GST_SUBTITLE_ENCODING"] = self.getGStreamerSubtitleEncoding()
+    def addLanguage(self, name, lang, country):
+        try:
+            self.lang[str(lang + '_' + country)] = (_(name), lang, country)
+            self.langlist.append(str(lang + '_' + country))
+        except:
+            print 'Language ' + str(name) + ' not found'
 
-	def activateLanguageIndex(self, index):
-		if index < len(self.langlist):
-			self.activateLanguage(self.langlist[index])
+    def activateLanguage(self, index):
+        try:
+            if index not in self.lang:
+                     print "Selected language %s does not exist, fallback to en_EN!" % index
+                     index = "en_EN"
+            lang = self.lang[index]
+            print 'Activating language ' + lang[0]
+            gettext._translations = {}
+            self.currLangObj = gettext.translation('enigma2', resolveFilename(SCOPE_LANGUAGE, ''), languages=[lang[1]], fallback=True)
+            self.currLangObj.install(names=('ngettext', 'pgettext'))
+            os.environ['LANGUAGE'] = lang[1]
+            self.activeLanguage = index
+            self.activateLanguageFallback(index, 'enigma2-plugins')
+            for x in self.callbacks:
+                x()
 
-	def getLanguageList(self):
-		return [ (x, self.lang[x]) for x in self.langlist ]
+        except:
+            print "Error in activating language!"
 
-	def getActiveLanguage(self):
-		return self.activeLanguage
+    def activateLanguageFallback(self, index, domain):
+        if index == self.getLanguage() and self.currLangObj:
+            lang = self.lang[index]
+            if fileExists(resolveFilename(SCOPE_LANGUAGE, lang[1] + '/LC_MESSAGES/' + domain + '.mo')):
+                print 'Activating ' + domain + ' language fallback ' + lang[0]
+                self.currLangObj.add_fallback(gettext.translation(domain, resolveFilename(SCOPE_LANGUAGE, ''), languages=[lang[1]], fallback=True))
 
-	def getActiveCatalog(self):
-		return self.catalog
+    def activateLanguageIndex(self, index):
+        if index < len(self.langlist):
+            self.activateLanguage(self.langlist[index])
 
-	def getActiveLanguageIndex(self):
-		idx = 0
-		for x in self.langlist:
-			if x == self.activeLanguage:
-				return idx
-			idx += 1
-		return None
+    def getLanguageList(self):
+        return [ (x, self.lang[x]) for x in self.langlist ]
 
-	def getLanguage(self):
-		try:
-			return str(self.lang[self.activeLanguage][1]) + "_" + str(self.lang[self.activeLanguage][2])
-		except:
-			return ''
+    def getActiveLanguage(self):
+        return self.activeLanguage
 
-	def getGStreamerSubtitleEncoding(self):
-		try:
-			return str(self.lang[self.activeLanguage][3])
-		except:
-			return 'ISO-8859-15'
+    def getActiveLanguageIndex(self):
+        idx = 0
+        for x in self.langlist:
+            if x == self.activeLanguage:
+                return idx
+            idx += 1
 
-	def addCallback(self, callback):
-		self.callbacks.append(callback)
+    def getLanguage(self):
+        try:
+            return str(self.lang[self.activeLanguage][1]) + '_' + str(self.lang[self.activeLanguage][2])
+        except:
+            return ''
+
+    def addCallback(self, callback):
+        self.callbacks.append(callback)
+
+    def precalcLanguageList(self):
+        T1 = _('Please use the UP and DOWN keys to select your language. Afterwards press the OK button.')
+        T2 = _('Language selection')
+        l = open('language_cache.py', 'w')
+        print >> l, '# -*- coding: UTF-8 -*-'
+        print >> l, 'LANG_TEXT = {'
+        for language in self.langlist:
+            self.activateLanguage(language)
+            print >> l, '"%s": {' % language
+            for name, lang, country in self.lang.values():
+                print >> l, '\t"%s_%s": "%s",' % (lang, country, _(name))
+
+            print >> l, '\t"T1": "%s",' % _(T1)
+            print >> l, '\t"T2": "%s",' % _(T2)
+            print >> l, '},'
+
+        print >> l, '}'
+
 
 language = Language()
