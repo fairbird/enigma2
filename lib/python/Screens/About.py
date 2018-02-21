@@ -235,7 +235,7 @@ class CommitInfo(Screen):
 			commitlog = commitlog.encode('utf-8')
 			self.cachedProjects[self.projects[self.project][1]] = commitlog
 		except:
-			commitlog += _("Currently the commit log cannot be retrieved - please try later again")
+			commitlog += _('You are using Black Hole Image To Dreambox' '\n\n' 'Built By RAED' '\n\n' 'Support' '\n' 'e-mail: rrrr53@hotmail.com' '\n' 'Arabic : www.tunisia-sat.com' '\n' 'English: www.ourdreambox.com' '\n\n' 'Enjoy')
 		self["AboutScrollLabel"].setText(commitlog)
 
 	def updateCommitLogs(self):
