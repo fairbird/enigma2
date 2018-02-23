@@ -21,6 +21,7 @@ class Boolean(Source, object):
 			self.poll_timer.start(poll)
 		else:
 			self.poll_timer = None
+		return
 
 	@cached
 	def getBoolean(self):
@@ -28,6 +29,7 @@ class Boolean(Source, object):
 			return self.function()
 		else:
 			return self.fixed
+		return
 
 	def setBoolean(self, value):
 		assert self.function is None
@@ -40,9 +42,15 @@ class Boolean(Source, object):
 		self.changed((self.CHANGED_ALL,))
 
 	def destroy(self):
-		if self.poll_timer:
-			self.poll_timer.callback.remove(self.poll)
-		if self.post_destroy is not None:
-			self.fixed = self.post_destroy
-			self.poll()
+		try:
+			if self.poll_timer:
+				self.poll_timer.callback.remove(self.poll)
+			if self.post_destroy is not None:
+				self.fixed = self.post_destroy
+				self.poll()
+				Source.destroy(self)
+		except:
+			pass
+
 		Source.destroy(self)
+		return
