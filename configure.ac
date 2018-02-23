@@ -229,7 +229,6 @@ data/skin_default/Makefile
 data/skin_default/menu/Makefile
 data/skin_default/icons/Makefile
 data/skin_default/buttons/Makefile
-data/skin_default/spinner/Makefile
 data/skin_default/LCDIcons/Makefile
 include/Makefile
 lib/Makefile
