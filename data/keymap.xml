@@ -179,6 +179,8 @@
 	<map context="InfobarMenuActions">
 		<key id="KEY_MENU" mapto="mainMenu" flags="mr"/>
 		<key id="KEY_SPACE" mapto="mainMenu" flags="mr"/>
+		<key id="KEY_ANGLE" mapto="toggleAspectRatio" flags="b" />
+ 		<key id="KEY_VMODE" mapto="toggleAspectRatio" flags="b" />
 	</map>
 
 	<map context="MenuActions">
@@ -214,12 +216,18 @@
 		</device>
 	</map>
 
+	<map context="InfobarAspectSelectionActions">
+ 		<key id="KEY_GREEN" mapto="aspectSelection" flags="l" />
+ 		<key id="KEY_MODE" mapto="aspectSelection" flags="l" />
+ 		<key id="KEY_MODE" mapto="aspectSelection" flags="b" />
+ 	</map>
+	
 	<map context="InfobarSubtitleSelectionActions">
 		<key id="KEY_SUBTITLE" mapto="subtitleSelection" flags="m"/>
 	</map>
 
 	<map context="InfobarSubserviceSelectionActions">
-		<key id="KEY_GREEN" mapto="subserviceSelection" flags="b"/>
+		<key id="KEY_GREEN" mapto="GreenPressed" flags="b"/>
 	</map>
 
 	<map context="InfobarRedButtonActions">
@@ -255,8 +263,7 @@
 	<map context="GlobalActions">
 		<key id="KEY_VOLUMEUP" mapto="volumeUp" flags="mr"/>
 		<key id="KEY_VOLUMEDOWN" mapto="volumeDown" flags="mr"/>
-		<key id="KEY_MUTE" mapto="volumeMute" flags="m"/>
-		<key id="KEY_MUTE" mapto="volumeMuteLong" flags="l"/>
+		<key id="KEY_MUTE" mapto="volumeMute" flags="mr"/>
 		<key id="KEY_POWER" mapto="power_long" flags="l"/>
 		<key id="KEY_POWER" mapto="power_down" flags="m"/>
 		<key id="KEY_POWER" mapto="power_up" flags="b"/>
@@ -804,15 +811,15 @@
 		<key id="KEY_TEXT" mapto="text" flags="m"/>
 		<key id="KEY_HELP" mapto="displayHelp" flags="b"/>
 		<key id="KEY_HELP" mapto="displayHelp_long" flags="l"/>
-        <key id="KEY_SUBTITLE" mapto="subtitle" flags="m"/>
-        <key id="KEY_MENU" mapto="mainMenu" flags="m"/>
-        <key id="KEY_INFO" mapto="info" flags="b"/>
+	        <key id="KEY_SUBTITLE" mapto="subtitle" flags="m"/>
+	        <key id="KEY_MENU" mapto="mainMenu" flags="m"/>
+	        <key id="KEY_INFO" mapto="info" flags="b"/>
 		<key id="KEY_INFO" mapto="info_long" flags="l"/>
 		<key id="KEY_VIDEO" mapto="list" flags="b"/>
 		<key id="KEY_VIDEO" mapto="list_long" flags="r"/>
-        <key id="KEY_BACK" mapto="back" flags="b"/>
+	        <key id="KEY_BACK" mapto="back" flags="b"/>
 		<key id="KEY_BACK" mapto="back_long" flags="l"/>
-        <key id="KEY_END" mapto="end" flags="m"/>
+	        <key id="KEY_END" mapto="end" flags="m"/>
 		<key id="KEY_EPG" mapto="epg" flags="b"/>
 		<key id="KEY_EPG" mapto="epg_long" flags="l"/>
 		<key id="KEY_LEFT" mapto="cross_left" flags="m"/>
@@ -836,12 +843,12 @@
 		<key id="KEY_PROGRAM" mapto="timer" flags="b"/>
 		<key id="KEY_PROGRAM" mapto="timer_long" flags="l"/>
 		<key id="KEY_PLAYPAUSE" mapto="playpause" flags="m"/>
-        <key id="KEY_LIST" mapto="playlist" flags="m"/>
-        <key id="KEY_TIME" mapto="timeshift" flags="m"/>
+	        <key id="KEY_LIST" mapto="playlist" flags="m"/>
+	        <key id="KEY_TIME" mapto="timeshift" flags="m"/>
 		<key id="KEY_SEARCH" mapto="search" flags="b"/>
 		<key id="KEY_SEARCH" mapto="search_long" flags="l"/>
-        <key id="KEY_RESTART" mapto="slow" flags="m"/>
-        <key id="KEY_BOOKMARKS" mapto="mark" flags="b"/>
+	        <key id="KEY_RESTART" mapto="slow" flags="m"/>
+	        <key id="KEY_BOOKMARKS" mapto="mark" flags="b"/>
 		<key id="KEY_BOOKMARKS" mapto="mark_long" flags="l"/>
 		<key id="KEY_SLEEP" mapto="sleep" flags="b"/>
 		<key id="KEY_SLEEP" mapto="sleep_long" flags="l"/>
@@ -864,7 +871,7 @@
 		<key id="KEY_PAGEUP" mapto="pageUp_long" flags="l"/>
 		<key id="KEY_PAGEDOWN" mapto="pageDown" flags="b"/>
 		<key id="KEY_PAGEDOWN" mapto="pageDown_long" flags="l"/>
-		<key id="KEY_MEDIA" mapto="media" flags="b"/>
+                <key id="KEY_MEDIA" mapto="media" flags="b"/>
 		<key id="KEY_MEDIA" mapto="media_long" flags="l"/>
 		<key id="KEY_FAVORITES" mapto="favorites" flags="b"/>
 		<key id="KEY_FAVORITES" mapto="favorites_long" flags="l"/>
