@@ -1343,4 +1343,24 @@ self.instance.move(ePoint(orgpos.x() + (orgwidth - newwidth)/2, orgpos.y() + (or
 		<widget source="key_green" render="Label" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
 		<widget name="filelist" position="5,50" size="510,370" scrollbarMode="showOnDemand"/>
 	</screen>
+	<!-- History Zap Selector -->
+        <screen name="HistoryZapSelector" position="15,center" size="550,490" flags="wfNoBorder">
+		<eLabel text="History Zap..." position="0,-32" size="550,50" halign="center" font="Regular; 35" backgroundColor="background" foregroundColor="foreground" transparent="1" />
+		<eLabel position="30,50" zPosition="0" size="490,1" backgroundColor="background" />
+		<eLabel position="9,0" zPosition="-2" size="532,490" />
+		<widget source="menu" render="Listbox" position="0,60" size="550,420" scrollbarMode="showNever" backgroundColor="background" foregroundColor="foreground" transparent="1">
+			<convert type="TemplatedMultiContent">
+				{"template": [
+						MultiContentEntryText(pos = (128, 22), size = (10, 22), font = 1, flags = RT_HALIGN_CENTER | RT_VALIGN_CENTER, text = 1), # Current Service
+						MultiContentEntryText(pos = (150, 2), size = (370, 25), font = 1, flags = RT_HALIGN_LEFT | RT_VALIGN_TOP, text = 2), # Servicename
+						MultiContentEntryText(pos = (150, 24), size = (370, 22), font = 2, flags = RT_HALIGN_LEFT | RT_VALIGN_CENTER | RT_WRAP, text = 3), # Eventname
+						MultiContentEntryText(pos = (150, 46), size = (370, 21), font = 3, flags = RT_HALIGN_LEFT, text = 5), # Eventtime
+						MultiContentEntryPixmapAlphaBlend(pos=(30, 9), size=(85, 51), png=6, flags = BT_SCALE) # picon
+					],
+				 "fonts": [gFont("Regular",22), gFont("Regular",22), gFont("Regular",20), gFont("Regular",18)],
+				 "itemHeight": 70
+				}
+			</convert>
+		</widget>
+	</screen>
 </skin>
