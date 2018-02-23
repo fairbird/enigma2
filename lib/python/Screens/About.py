@@ -24,17 +24,30 @@ class About(Screen):
 		self.setTitle(_("About"))
 		hddsplit = skin.parameters.get("AboutHddSplit", 0)
 
-		AboutText = _("Hardware: ") + about.getHardwareTypeString() + "\n"
+		bhVer = 'Black Hole'
+		f = open('/etc/imageversion', 'r')
+		bhVer = f.readline().strip()
+		f.close()
+
+		bhRev = ''
+		f = open('/etc/bhrev', 'r')
+		bhRev = f.readline().strip()
+		f.close()
+
+		AboutText = _("Image: Black Hole ") + bhVer + "\n"
+		AboutText += _("Support: RAED rrrr53@hotmail.com") + "\n\n"
+
+		AboutText += _("Hardware: ") + about.getHardwareTypeString() + "\n"
 		AboutText += _("CPU: ") + about.getCPUInfoString() + "\n"
-		AboutText += _("Image: ") + about.getImageTypeString() + "\n"
-		AboutText += _("Build date: ") + about.getBuildDateString() + "\n"
+		#AboutText += _("Image: ") + about.getImageTypeString() + "\n"
+		#AboutText += _("Build date: ") + about.getBuildDateString() + "\n"
 
 		# [WanWizard] Removed until we find a reliable way to determine the installation date
 		# AboutText += _("Installed: ") + about.getFlashDateString() + "\n"
 
 		# [WanWizard] No longer that relevant as we now have an accurate build date
 		# as I'm not sure this variable isn't used elsewhere, I haven't removed it
-		ImageVersion = _("Last upgrade: ") + about.getImageVersionString()
+		ImageVersion = _("Last upgrade: ") + bhVer
 		self["ImageVersion"] = StaticText(ImageVersion)
 		# AboutText += ImageVersion + "\n"
 
@@ -197,14 +210,11 @@ class CommitInfo(Screen):
 		self.project = 0
 		self.projects = [
 			("https://api.github.com/repos/openpli/enigma2/commits" + branch, "Enigma2"),
-			("https://api.github.com/repos/openpli/openpli-oe-core/commits" + branch, "Openpli Oe Core"),
+			('Black Hole', 'Depend on Openpli Oe Core'),
 			("https://api.github.com/repos/openpli/enigma2-plugins/commits", "Enigma2 Plugins"),
 			("https://api.github.com/repos/openpli/aio-grab/commits", "Aio Grab"),
 			("https://api.github.com/repos/openpli/enigma2-plugin-extensions-epgimport/commits", "Plugin EPGImport"),
-			("https://api.github.com/repos/openpli/enigma2-plugin-skins-magic/commits", "Skin Magic SD"),
-			("https://api.github.com/repos/littlesat/skin-PLiHD/commits", "Skin PLi HD"),
 			("https://api.github.com/repos/E2OpenPlugins/e2openplugin-OpenWebif/commits", "OpenWebif"),
-			("https://api.github.com/repos/haroo/HansSettings/commits", "Hans settings")
 		]
 		self.cachedProjects = {}
 		self.Timer = eTimer()
@@ -214,9 +224,11 @@ class CommitInfo(Screen):
 	def readGithubCommitLogs(self):
 		url = self.projects[self.project][0]
 		commitlog = ""
+		commitlog2 = _("You are using Black Hole Image To Dreambox" "\n\n" "Built By RAED" "\n\n" "Support" "\n" "e-mail: rrrr53@hotmail.com" "\n" "Arabic : www.tunisia-sat.com" "\n" "English: www.ourdreambox.com" "Enigma2: From OpenPLI git" "\n\n")
 		from datetime import datetime
 		from json import loads
 		from urllib2 import urlopen
+		self["AboutScrollLabel"].setText(commitlog2 + commitlog)
 		try:
 			commitlog += 80 * '-' + '\n'
 			commitlog += url.split('/')[-2] + '\n'
@@ -235,8 +247,8 @@ class CommitInfo(Screen):
 			commitlog = commitlog.encode('utf-8')
 			self.cachedProjects[self.projects[self.project][1]] = commitlog
 		except:
-			commitlog += _("Currently the commit log cannot be retrieved - please try later again")
-		self["AboutScrollLabel"].setText(commitlog)
+			commitlog += _("Check yor internet connetion and try again or Currently the commit log cannot be retrieved - please try later again")
+		self["AboutScrollLabel"].setText(commitlog2 + commitlog)
 
 	def updateCommitLogs(self):
 		if self.projects[self.project][1] in self.cachedProjects:
