@@ -31,13 +31,17 @@ class LanguageSelection(Screen):
 		self["languages"] = List(self.list)
 
 		self.updateList()
-		self.onLayoutFinish.append(self.selectActiveLanguage)
+		self["key_red"] = Label(_("Cancel"))
+		self["key_blue"] = Label(_("Add/Delete Language"))
 
-		self["actions"] = ActionMap(["OkCancelActions"],
+		self["actions"] = ActionMap(["SetupActions", "ColorActions"],
 		{
 			"ok": self.save,
 			"cancel": self.cancel,
+			"red": self.cancel,
+			"blue": self.openlanguageone,
 		}, -1)
+
 
 	def selectActiveLanguage(self):
 		pos = 0
@@ -50,9 +54,9 @@ class LanguageSelection(Screen):
 		self.commit(self.run())
 		if self.oldActiveLanguage != config.osd.language.value:
 			if InfoBar.instance:
-				self.session.openWithCallback(self.restartGUI, MessageBox,_("GUI needs a restart to apply a new language\nDo you want to restart the GUI now?"), MessageBox.TYPE_YESNO, title=_("Restart GUI now?"))
+				self.close(self.oldActiveLanguage != config.osd.language.value)
 			else:
-				self.restartGUI()
+				self.close()
 		else:
 			self.close()
 
@@ -62,6 +66,11 @@ class LanguageSelection(Screen):
 	def cancel(self):
 		language.activateLanguage(self.oldActiveLanguage)
 		self.close()
+
+	def openlanguageone(self):
+		print "[ Open setup Add/Delete panel... ]"
+                from Components.languageone import TSilangScreen
+                self.session.open(TSilangScreen)
 
 	def run(self):
 		print "updating language..."
