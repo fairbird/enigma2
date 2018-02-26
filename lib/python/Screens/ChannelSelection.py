@@ -1883,6 +1883,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 
 		self.history = [ ]
 		self.history_pos = 0
+		self.delhistpoint = None
 
 		if config.servicelist.startupservice.value and config.servicelist.startuproot.value:
 			config.servicelist.lastmode.value = config.servicelist.startupmode.value
@@ -2133,19 +2134,29 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 		return ret
 
 	def addToHistory(self, ref):
+		if self.delhistpoint is not None:
+			x = self.delhistpoint
+			while x <= len(self.history)-1:
+				del self.history[x]
+		self.delhistpoint = None
+
 		if self.servicePath is not None:
-			tmp=self.servicePath[:]
+			tmp = self.servicePath[:]
 			tmp.append(ref)
-			try:
-				del self.history[self.history_pos+1:]
-			except:
-				pass
 			self.history.append(tmp)
 			hlen = len(self.history)
+			x = 0
+			while x < hlen - 1:
+				if self.history[x][-1] == ref:
+					del self.history[x]
+					hlen -= 1
+				else:
+					x += 1
+
 			if hlen > HISTORYSIZE:
 				del self.history[0]
 				hlen -= 1
-			self.history_pos = hlen-1
+			self.history_pos = hlen - 1
 
 	def historyBack(self):
 		hlen = len(self.history)
@@ -2156,10 +2167,12 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 		if hlen > 1 and self.history_pos > 0:
 			self.history_pos -= 1
 			self.setHistoryPath()
+		self.delhistpoint = self.history_pos+1
 
 	def historyNext(self):
+		self.delhistpoint = None
 		hlen = len(self.history)
-		if hlen > 1 and self.history_pos < (hlen-1):
+		if hlen > 1 and self.history_pos < hlen - 1:
 			self.history_pos += 1
 			self.setHistoryPath()
 
@@ -2180,6 +2193,43 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 		else:
 			self.setCurrentSelection(ref)
 		self.saveChannel(ref)
+
+	def historyClear(self):
+		if self and self.servicelist:
+			for i in range(0, len(self.history)-1):
+				del self.history[0]
+			self.history_pos = len(self.history)-1
+			return True
+		return False
+
+	def historyZap(self, direction):
+		hlen = len(self.history)
+		if hlen < 1: return
+		mark = self.history_pos
+		selpos = self.history_pos + direction
+		if selpos < 0: selpos = 0
+		if selpos > hlen-1: selpos = hlen-1
+		serviceHandler = eServiceCenter.getInstance()
+		historylist = [ ]
+		for x in self.history:
+			info = serviceHandler.info(x[-1])
+			if info: historylist.append((info.getName(x[-1]), x[-1]))
+		self.session.openWithCallback(self.historyMenuClosed, HistoryZapSelector, historylist, selpos, mark, invert_items=True, redirect_buttons=True, wrap_around=True)
+
+	def historyMenuClosed(self, retval):
+		if not retval: return
+		hlen = len(self.history)
+		pos = 0
+		for x in self.history:
+			if x[-1] == retval: break
+			pos += 1
+		self.delhistpoint = pos+1
+		if pos < hlen and pos != self.history_pos:
+			tmp = self.history[pos]
+			# self.history.append(tmp)
+			# del self.history[pos]
+			self.history_pos = pos
+			self.setHistoryPath()
 
 	def saveRoot(self):
 		path = ''
@@ -2583,3 +2633,104 @@ class SimpleChannelSelection(ChannelSelectionBase, SelectionEventInfo):
 
 	def getMutableList(self, root=None):
 		return None
+
+class HistoryZapSelector(Screen):
+	def __init__(self, session, items=None, sel_item=0, mark_item=0, invert_items=False, redirect_buttons=False, wrap_around=True):
+		if not items: items = []
+		Screen.__init__(self, session)
+		self.redirectButton = redirect_buttons
+		self.invertItems = invert_items
+		if self.invertItems:
+			self.currentPos = len(items) - sel_item - 1
+		else:
+			self.currentPos = sel_item
+		self["actions"] = ActionMap(["OkCancelActions", "InfobarCueSheetActions"],
+			{
+				"ok": self.okbuttonClick,
+				"cancel": self.cancelClick,
+				"jumpPreviousMark": self.prev,
+				"jumpNextMark": self.next,
+				"toggleMark": self.okbuttonClick,
+			})
+		self.setTitle(_("History zap..."))
+		self.list = []
+		cnt = 0
+		serviceHandler = eServiceCenter.getInstance()
+		for x in items:
+
+			info = serviceHandler.info(x[-1])
+			if info:
+				serviceName = info.getName(x[-1])
+				if serviceName is None:
+					serviceName = ""
+				eventName = ""
+				descriptionName = ""
+				durationTime = ""
+				# if config.plugins.SetupZapSelector.event.value != "0":
+				event = info.getEvent(x[-1])
+				if event:
+					eventName = event.getEventName()
+					if eventName is None:
+						eventName = ""
+					else:
+						eventName = eventName.replace('(18+)', '').replace('18+', '').replace('(16+)', '').replace('16+', '').replace('(12+)', '').replace('12+', '').replace('(7+)', '').replace('7+', '').replace('(6+)', '').replace('6+', '').replace('(0+)', '').replace('0+', '')	
+					# if config.plugins.SetupZapSelector.event.value == "2":
+					descriptionName = event.getShortDescription()
+					if descriptionName is None or descriptionName == "":
+						descriptionName = event.getExtendedDescription()
+						if descriptionName is None:
+							descriptionName = ""
+					# if config.plugins.SetupZapSelector.duration.value:
+					begin = event.getBeginTime()
+					if begin is not None:
+						end = begin + event.getDuration()
+						remaining = (end - int(time())) / 60
+						prefix = ""
+						if remaining > 0:
+							prefix = "+"
+						local_begin = localtime(begin)
+						local_end = localtime(end)
+						durationTime = _("%02d.%02d - %02d.%02d (%s%d min)") % (local_begin[3],local_begin[4],local_end[3],local_end[4],prefix, remaining)
+
+			png = ""
+			picon = getPiconName(str(ServiceReference(x[1])))
+			if picon != "":
+				png = loadPNG(picon)
+			if self.invertItems:
+				self.list.insert(0, (x[1], cnt == mark_item and "»" or "", x[0], eventName, descriptionName, durationTime, png))
+			else:
+				self.list.append((x[1], cnt == mark_item and "»" or "", x[0], eventName, descriptionName, durationTime, png))
+			cnt += 1
+		self["menu"] = List(self.list, enableWrapAround=wrap_around)
+		self.onShown.append(self.__onShown)
+
+	def __onShown(self):
+		self["menu"].index = self.currentPos
+
+	def prev(self):
+		if self.redirectButton:
+			self.down()
+		else:
+			self.up()
+
+	def next(self):
+		if self.redirectButton:
+			self.up()
+		else:
+			self.down()
+
+	def up(self):
+		self["menu"].selectPrevious()
+
+	def down(self):
+		self["menu"].selectNext()
+
+	def getCurrent(self):
+		cur = self["menu"].current
+		return cur and cur[0]
+
+	def okbuttonClick(self):
+		self.close(self.getCurrent())
+
+	def cancelClick(self):
+		self.close(None)
