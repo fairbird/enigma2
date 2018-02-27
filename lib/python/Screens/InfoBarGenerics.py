@@ -2108,15 +2108,10 @@ class InfoBarExtensions:
 
 	def __init__(self):
 		self.list = []
-		self.addExtension((lambda: _("Softcam Setup"), self.openSoftcamSetup, lambda: config.misc.softcam_setup.extension_menu.value and SystemInfo["HasSoftcamInstalled"]), "1")
 		self["InstantExtensionsActions"] = HelpableActionMap(self, "InfobarExtensions",
 			{
 				"extensions": (self.showExtensionSelection, _("Show extensions...")),
 			}, 1) # lower priority
-
-	def openSoftcamSetup(self):
-		from Screens.SoftcamSetup import SoftcamSetup
-		self.session.open(SoftcamSetup)
 
 	def addExtension(self, extension, key = None, type = EXTENSION_SINGLE):
 		self.list.append((type, extension, key))
