@@ -13,7 +13,7 @@ import enigma
 profile("LOAD:InfoBarGenerics")
 from Screens.InfoBarGenerics import InfoBarShowHide, \
 	InfoBarNumberZap, InfoBarChannelSelection, InfoBarMenu, InfoBarRdsDecoder, \
-	InfoBarEPG, InfoBarSeek, InfoBarInstantRecord, InfoBarRedButton, InfoBarTimerButton, InfoBarVmodeButton, \
+	InfoBarEPG, InfoBarSeek, InfoBarInstantRecord, InfoBarRedButton, InfoBarTimerButton, InfoBarAspectSelection, InfoBarVmodeButton, \
 	InfoBarAudioSelection, InfoBarAdditionalInfo, InfoBarNotifications, InfoBarDish, InfoBarUnhandledKey, \
 	InfoBarSubserviceSelection, InfoBarShowMovies, InfoBarTimeshift,  \
 	InfoBarServiceNotifications, InfoBarPVRState, InfoBarCueSheetSupport, InfoBarBuffer, \
@@ -32,7 +32,7 @@ from Screens.HelpMenu import HelpableScreen
 
 class InfoBar(InfoBarBase, InfoBarShowHide,
 	InfoBarNumberZap, InfoBarChannelSelection, InfoBarMenu, InfoBarEPG, InfoBarRdsDecoder,
-	InfoBarInstantRecord, InfoBarAudioSelection, InfoBarRedButton, InfoBarTimerButton, InfoBarVmodeButton,
+	InfoBarInstantRecord, InfoBarAudioSelection, InfoBarRedButton, InfoBarTimerButton, InfoBarAspectSelection, InfoBarVmodeButton,
 	HelpableScreen, InfoBarAdditionalInfo, InfoBarNotifications, InfoBarDish, InfoBarUnhandledKey,
 	InfoBarSubserviceSelection, InfoBarTimeshift, InfoBarSeek, InfoBarCueSheetSupport, InfoBarBuffer,
 	InfoBarSummarySupport, InfoBarTimeshiftState, InfoBarTeletextPlugin, InfoBarExtensions,
@@ -57,7 +57,7 @@ class InfoBar(InfoBarBase, InfoBarShowHide,
 
 		for x in HelpableScreen, \
 				InfoBarBase, InfoBarShowHide, \
-				InfoBarNumberZap, InfoBarChannelSelection, InfoBarMenu, InfoBarEPG, InfoBarRdsDecoder, \
+				InfoBarNumberZap, InfoBarChannelSelection, InfoBarMenu, InfoBarEPG, InfoBarRdsDecoder, InfoBarAspectSelection, \
 				InfoBarInstantRecord, InfoBarAudioSelection, InfoBarRedButton, InfoBarTimerButton, InfoBarUnhandledKey, InfoBarVmodeButton,\
 				InfoBarAdditionalInfo, InfoBarNotifications, InfoBarDish, InfoBarSubserviceSelection, InfoBarBuffer, \
 				InfoBarTimeshift, InfoBarSeek, InfoBarCueSheetSupport, InfoBarSummarySupport, InfoBarTimeshiftState, \
@@ -148,7 +148,7 @@ class InfoBar(InfoBarBase, InfoBarShowHide,
 	def openMoviePlayer(self, ref):
 		self.session.open(MoviePlayer, ref, slist=self.servicelist, lastservice=self.session.nav.getCurrentlyPlayingServiceOrGroup(), infobar=self)
 
-class MoviePlayer(InfoBarBase, InfoBarShowHide, InfoBarMenu, InfoBarSeek, InfoBarShowMovies, InfoBarInstantRecord,
+class MoviePlayer(InfoBarAspectSelection, InfoBarBase, InfoBarShowHide, InfoBarMenu, InfoBarSeek, InfoBarShowMovies, InfoBarInstantRecord,
 		InfoBarAudioSelection, HelpableScreen, InfoBarNotifications, InfoBarServiceNotifications, InfoBarPVRState,
 		InfoBarCueSheetSupport, InfoBarMoviePlayerSummarySupport, InfoBarSubtitleSupport, Screen, InfoBarTeletextPlugin,
 		InfoBarServiceErrorPopupSupport, InfoBarExtensions, InfoBarPlugins, InfoBarPiP, InfoBarHDMI, InfoBarHotkey):
@@ -175,7 +175,7 @@ class MoviePlayer(InfoBarBase, InfoBarShowHide, InfoBarMenu, InfoBarSeek, InfoBa
 
 		self.allowPiP = True
 
-		for x in HelpableScreen, InfoBarShowHide, InfoBarMenu, \
+		for x in InfoBarAspectSelection, HelpableScreen, InfoBarShowHide, InfoBarMenu, \
 				InfoBarBase, InfoBarSeek, InfoBarShowMovies, InfoBarInstantRecord, \
 				InfoBarAudioSelection, InfoBarNotifications, \
 				InfoBarServiceNotifications, InfoBarPVRState, InfoBarCueSheetSupport, \
