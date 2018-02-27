@@ -290,6 +290,7 @@ class ConfigSelection(ConfigElement):
 
 		self._descr = None
 		self.default = self._value = self.last_value = default
+		return
 
 	def setChoices(self, choices, default = None):
 		self.choices = choicesList(choices)
@@ -300,6 +301,10 @@ class ConfigSelection(ConfigElement):
 
 		if self.value not in self.choices:
 			self.value = default
+		return
+
+	def getChoices(self):
+		return self.choices.choices
 
 	def setValue(self, value):
 		if value in self.choices:
@@ -308,6 +313,7 @@ class ConfigSelection(ConfigElement):
 			self._value = self.default
 		self._descr = None
 		self.changed()
+		return
 
 	def tostring(self, val):
 		return val
