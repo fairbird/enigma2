@@ -572,7 +572,14 @@ class InfoBarNumberZap:
 		if number == 0:
 			if isinstance(self, InfoBarPiP) and self.pipHandles0Action():
 				self.pipDoHandle0Action()
-			elif len(self.servicelist.history) > 1:
+			else:
+				if config.misc.delitepanicb.value:
+					self.servicelist.history = []
+					self.servicelist.history_pos = 0
+					self.zapToNumber(1)
+				else:
+					self.servicelist.recallPrevService()
+			if len(self.servicelist.history) > 1:
 				self.checkTimeshiftRunning(self.recallPrevService)
 		else:
 			if "TimeshiftActions" in self and self.timeshiftEnabled():
