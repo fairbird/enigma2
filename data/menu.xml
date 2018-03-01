@@ -60,7 +60,11 @@
 					</menu>
 				<item level="0" text="Network" entryID="network_setup"><screen module="NetworkSetup" screen="NetworkAdapterSelection"/></item>
 				<item level="1" text="Input devices" entryID="input_device_setup"><screen module="InputDeviceSetup" screen="InputDeviceSelection"/></item>
-				<item entryID="lcd_setup" requires="Display"><setup level="1" id="lcd"/></item>
+				<menu level="0" text="Display" entryID="lcd_setup" requires="Display">
+				     <id val="display" />
+				     <item weight="0" level="0" entryID="lcd_setup"><setup id="lcd" /></item>
+				     <item weight="5" level="0" text="Skin setup" entryID="lcd_skin_setup" requires="LCDSKINSetup"><screen module="SkinSelector" screen="LcdSkinSelector"/></item>
+			        </menu>
 				<item entryID="keyboard_setup" text="Keyboard"><setup id="keyboard"/></item>
 				<item level="2" text="Recording paths" entryID="RecordPaths"><screen module="RecordPaths" screen="RecordPathsSettings"/></item>
 				<item level="0" text="Language" entryID="language_setup"><screen module="LanguageSelection"/></item>
