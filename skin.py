@@ -5,14 +5,20 @@ import os
 
 profile("LOAD:enigma_skin")
 from enigma import eSize, ePoint, eRect, gFont, eWindow, eLabel, ePixmap, eWindowStyleManager, addFont, gRGB, eWindowStyleSkinned, getDesktop
-from Components.config import ConfigSubsection, ConfigText, config
+from Components.config import ConfigSubsection, ConfigText, ConfigInteger, config, ConfigYesNo, ConfigSelection, ConfigNothing
 from Components.Converter.Converter import Converter
 from Components.Sources.Source import Source, ObsoleteSource
 from Tools.Directories import resolveFilename, SCOPE_SKIN, SCOPE_FONTS, SCOPE_CURRENT_SKIN, SCOPE_CONFIG, fileExists, SCOPE_SKIN_IMAGE
 from Tools.Import import my_import
 from Tools.LoadPixmap import LoadPixmap
 from Components.RcModel import rc_model
+from boxbranding import getBoxType
 from Components.SystemInfo import SystemInfo
+
+config.vfd = ConfigSubsection()
+config.vfd.show = ConfigSelection([("skin_text.xml", _("Channel Name")), ("skin_text_clock.xml", _("Clock"))], "skin_text.xml")
+if not os.path.exists("/usr/share/enigma2/skin_text.xml"):
+	config.vfd.show = ConfigNothing()
 
 colorNames = {}
 # Predefined fonts, typically used in built-in screens and for components like
@@ -38,6 +44,12 @@ class SkinError(Exception):
 
 	def __str__(self):
 		return "{%s}: %s. Please contact the skin's author!" % (config.skin.primary_skin.value, self.msg)
+
+class DisplaySkinError(Exception):
+	def __init__(self, message):
+		self.msg = message
+	def __str__(self):
+		return "{%s}: %s. Please contact the skin's author!" % (config.skin.display_skin.value, self.msg)
 
 dom_skins = [ ]
 
@@ -75,16 +87,12 @@ def skin_user_skinname():
 
 # example: loadSkin("nemesis_greenline/skin.xml")
 config.skin = ConfigSubsection()
-DEFAULT_SKIN = SystemInfo["HasFullHDSkinSupport"] and "PLi-FullNightHD/skin.xml" or "PLi-HD/skin.xml"
-# on SD hardware, PLi-HD will not be available
-if not fileExists(resolveFilename(SCOPE_SKIN, DEFAULT_SKIN)):
-	# in that case, fallback to Magic (which is an SD skin)
-	DEFAULT_SKIN = "Magic/skin.xml"
-	if not fileExists(resolveFilename(SCOPE_SKIN, DEFAULT_SKIN)):
-		DEFAULT_SKIN = "skin.xml"
-config.skin.primary_skin = ConfigText(default=DEFAULT_SKIN)
-
-profile("LoadSkin")
+DEFAULT_SKIN = 'skin.xml'
+DEFAULT_DISPLAY_SKIN = "skin_display.xml"
+config.skin.primary_skin = ConfigText(default = DEFAULT_SKIN)
+config.skin.display_skin = ConfigText(default = DEFAULT_DISPLAY_SKIN)
+config.skin.xres = ConfigInteger(default=0)
+profile('LoadSkin')
 res = None
 name = skin_user_skinname()
 if name:
@@ -97,8 +105,26 @@ addSkin('skin_box.xml')
 # add optional discrete second infobar
 addSkin('skin_second_infobar.xml')
 display_skin_id = 1
-addSkin('skin_display.xml')
-addSkin('skin_text.xml')
+if getBoxType().startswith('dm'):
+	display_skin_id = 2
+try:
+	if not addSkin(os.path.join('display', config.skin.display_skin.value)):
+		raise DisplaySkinError, "display skin not found"
+except Exception, err:
+	print "SKIN ERROR:", err
+	skin = DEFAULT_DISPLAY_SKIN
+	if config.skin.display_skin.value == skin:
+		skin = 'skin_display.xml'
+	print "defaulting to standard display skin...", skin
+	config.skin.display_skin.value = skin
+	skin = os.path.join('display', skin)
+	addSkin(skin)
+	del skin
+# Add Skin for Display
+try:
+	addSkin(config.vfd.show.value)
+except:
+	addSkin('skin_text.xml')
 
 addSkin('skin_subtitles.xml')
 
@@ -587,11 +613,11 @@ def loadSingleSkinData(desktop, skin, path_prefix):
 			else:
 				foregroundColor = gRGB(0xFFFFFF)
 				haveColor = 0
-			col = get_attr("borderColor")
+			col = get_attr("borderColor" and "shadowColor")
 			if col:
-				borderColor = parseColor(col)
+				borderColor = shadowColor = parseColor(col)
 			else:
-				borderColor = gRGB(0)
+				borderColor = shadowColor = gRGB(0)
 			borderwidth = get_attr("borderWidth")
 			if borderwidth is None:
 				# default: use a subtitle border
