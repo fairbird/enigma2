@@ -171,13 +171,13 @@ class PositionerSetup(Screen):
 		self.stopOnLock = False
 
 		self.red = Button("")
-		self["key_red"] = self.red
+		self["key_red"] = self["red"] = self.red
 		self.green = Button("")
-		self["key_green"] = self.green
+		self["key_green"] = self["green"] = self.green
 		self.yellow = Button("")
-		self["key_yellow"] = self.yellow
+		self["key_yellow"] = self["yellow"] = self.yellow
 		self.blue = Button("")
-		self["key_blue"] = self.blue
+		self["key_blue"] = self["blue"] = self.blue
 
 		self.list = []
 		self["list"] = ConfigList(self.list)
