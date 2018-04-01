@@ -15,24 +15,27 @@ epg = None
 ref = None
 
 def zapToService(service, preview = False, zapback = False):
-	if Servicelist.startServiceRef is None:
-		Servicelist.startServiceRef = Session.nav.getCurrentlyPlayingServiceOrGroup()
-	if not service is None:
-		if not preview and not zapback:
-			if Servicelist.getRoot() != epg_bouquet:
-				Servicelist.clearPath()
-				if Servicelist.bouquet_root != epg_bouquet:
-					Servicelist.enterPath(Servicelist.bouquet_root)
-				Servicelist.enterPath(epg_bouquet)
-			Servicelist.setCurrentSelection(service)
-		if not zapback or preview:
-			Servicelist.zap(not preview, preview, ref=preview and service or None)
-	if (Servicelist.dopipzap or zapback) and not preview:
-		Servicelist.zapBack()
-	if not preview:
-		Servicelist.revertMode = None
-		Servicelist.startServiceRef = None
-		Servicelist.startRoot = None
+	try:
+		if Servicelist.startServiceRef is None:
+			Servicelist.startServiceRef = Session.nav.getCurrentlyPlayingServiceOrGroup()
+		if not service is None:
+			if not preview and not zapback:
+				if Servicelist.getRoot() != epg_bouquet:
+					Servicelist.clearPath()
+					if Servicelist.bouquet_root != epg_bouquet:
+						Servicelist.enterPath(Servicelist.bouquet_root)
+						Servicelist.enterPath(epg_bouquet)
+				Servicelist.setCurrentSelection(service)
+			if not zapback or preview:
+				Servicelist.zap(not preview, preview, ref=preview and service or None)
+		if (Servicelist.dopipzap or zapback) and not preview:
+			Servicelist.zapBack()
+		if not preview:
+			Servicelist.revertMode = None
+			Servicelist.startServiceRef = None
+			Servicelist.startRoot = None
+	except:
+		pass
 
 def getBouquetServices(bouquet):
 	services = [ ]
@@ -116,14 +119,17 @@ def runGraphMultiEpg():
 		Session.openWithCallback(reopen, GraphMultiEPG, services, zapToService, cb, ServiceReference(epg_bouquet).getServiceName(), selectBouquet, epg_bouquet)
 
 def reopen(answer):
-	if answer is None:
-		runGraphMultiEpg()
-	else:
-		global ref
-		if ref:
-			global Servicelist
-			Servicelist.setCurrentSelection(ref)
-		closed(answer)
+	try:
+		if answer is None:
+			runGraphMultiEpg()
+		else:
+			global ref
+			if ref:
+				global Servicelist
+				Servicelist.setCurrentSelection(ref)
+			closed(answer)
+	except:
+		pass
 
 def Plugins(**kwargs):
 	name = _("Graphical Multi EPG")
