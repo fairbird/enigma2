@@ -34,6 +34,8 @@
 		<color name="green" value="#389416"/>
 		<color name="blue" value="#0064c7"/>
 		<color name="yellow" value="#bab329"/>
+		<color name="grey" value="#9f9f9f"/>
+                <color name="darkgrey" value="#4a4a4a"/>
 		<color name="transparent" value="#ffffffff"/>
 		<color name="transpBlack" value="#80000000"/>
 		<color name="transpWhite" value="#80ffffff"/>
