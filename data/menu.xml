@@ -51,6 +51,8 @@
 				<item level="0" entryID="timezone_setup"><setup id="timezone"/></item>
 				<item level="2" entryID="epg_settings"><setup id="epgsettings"/></item>
 				<item level="0" entryID="user_interface"><setup id="userinterface"/></item>
+				<item level="0" entryID="logs_setup" weight="70" ><setup id="logs" /></item>
+                                <item level="0" text="Log Manager" entryID="log_manager"  weight="71" ><screen module="LogManager" screen="LogManager" /></item>
 				</menu>
 				<item level="1" entryID="rfmod_setup" requires="RfModulator"><setup id="RFmod"/></item>
 				<menu level="0" text="Expert settings" entryID="expert_selection">
