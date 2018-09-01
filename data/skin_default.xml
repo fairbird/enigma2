@@ -1334,4 +1334,24 @@ self.instance.move(ePoint(orgpos.x() + (orgwidth - newwidth)/2, orgpos.y() + (or
 		<widget source="key_green" render="Label" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
 		<widget name="filelist" position="5,50" size="510,370" scrollbarMode="showOnDemand"/>
 	</screen>
+	<screen name="LogManager" position="center,center" size="560,400" title="Log Manager">
+		<ePixmap pixmap="buttons/red.png" position="0,0" size="140,40" alphatest="on"/>
+		<widget name="key_red" position="0,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1"/>
+		<ePixmap pixmap="buttons/green.png" position="140,0" size="140,40" alphatest="on"/>
+		<widget name="key_green" position="140,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1"/>
+		<ePixmap pixmap="buttons/yellow.png" position="280,0" size="140,40" alphatest="on"/>
+		<widget name="key_yellow" position="280,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#a08500" transparent="1"/>
+		<ePixmap pixmap="buttons/blue.png" position="420,0" size="140,40" alphatest="on"/>
+		<widget name="key_blue" position="420,0" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#141484" transparent="1"/>
+		<widget name="list" position="0,70" size="560,325" transparent="0" scrollbarMode="showOnDemand"/>
+		<applet type="onLayoutFinish">
+			self["list"].instance.setItemHeight(25)
+		</applet>
+	</screen>
+	<screen name="LogManagerViewLog" position="center,center" size="700,400" title="Log Manager">
+		<widget name="list" position="0,0" size="700,400" font="Console;14"/>
+	</screen>
+	<screen name="LogManagerFb" position="center,center" size="265,430" title="">
+		<widget name="list" position="0,0" size="265,430" scrollbarMode="showOnDemand"/>
+	</screen>
 </skin>
