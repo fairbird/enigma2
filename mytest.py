@@ -548,6 +548,10 @@ profile("UsageConfig")
 import Components.UsageConfig
 Components.UsageConfig.InitUsageConfig()
 
+profile("Init:DebugLogCheck")
+import Screens.LogManager
+Screens.LogManager.AutoLogManager()
+
 profile("keymapparser")
 import keymapparser
 keymapparser.readKeymap(config.usage.keymap.value)
