@@ -111,6 +111,39 @@ def InitUsageConfig():
 		choicelist.append((str(i), ngettext("%d minute", "%d minutes", m) % m))
 	config.usage.pip_last_service_timeout = ConfigSelection(default = "0", choices = choicelist)
 
+	config.crash = ConfigSubsection()
+	config.crash.enabledebug = ConfigYesNo(default=False)
+	config.crash.debugloglimit = ConfigSelectionNumber(min=1, max=10, stepwidth=1, default=4, wraparound=True)
+	config.crash.daysloglimit = ConfigSelectionNumber(min=1, max=30, stepwidth=1, default=8, wraparound=True)
+	config.crash.sizeloglimit = ConfigSelectionNumber(min=1, max=20, stepwidth=1, default=10, wraparound=True)
+	config.crash.lastfulljobtrashtime = ConfigInteger(default=-1)
+	debugpath = [('/home/root/logs/', '/home/root/')]
+	for p in harddiskmanager.getMountedPartitions():
+		if os.path.exists(p.mountpoint):
+			d = os.path.normpath(p.mountpoint)
+			if p.mountpoint != '/':
+				debugpath.append((p.mountpoint + 'logs/', d))
+
+	config.crash.debug_path = ConfigSelection(default='/home/root/logs/', choices=debugpath)
+	if not os.path.exists('/home'):
+		os.mkdir('/home', 493)
+	if not os.path.exists('/home/root'):
+		os.mkdir('/home/root', 493)
+
+	def updatedebug_path(configElement):
+		if not os.path.exists(config.crash.debug_path.value):
+			try:
+				os.mkdir(config.crash.debug_path.value, 493)
+			except:
+				print 'Failed to create log path: %s' % config.crash.debug_path.value
+
+	config.crash.debug_path.addNotifier(updatedebug_path, immediate_feedback=False)
+	crashlogheader = _('We are really sorry. Your receiver encountered a software problem, and needs to be restarted.\nPlease send the logfile %senigma2_crash_xxxxxx.log to rrrr53@hotmail.com.\nYour receiver restarts in 10 seconds!\nComponent: enigma2') % config.crash.debug_path.value
+	config.crash.debug_text = ConfigText(default=crashlogheader, fixed_size=False)
+	config.crash.skin_error_crash = ConfigYesNo(default=True)
+	config.usage.timerlist_finished_timer_position = ConfigSelection(default='end', choices=[('beginning', _('at beginning')), ('end', _('at end'))])
+	config.usage.timerlist_show_epg = ConfigYesNo(default=True)
+
 	config.usage.default_path = ConfigText(default = "")
 	config.usage.timer_path = ConfigText(default = "<default>")
 	config.usage.instantrec_path = ConfigText(default = "<default>")
@@ -737,6 +770,14 @@ def InitUsageConfig():
 		("4", "3"),("5", "1,3"),("6", "2,3"),("7", "1,2,3"),
 		("8", "4"),("9", "1,4"),("10", "2,4"),("11", "1,2,4"),
 		("12", "3,4"),("13", "1,3,4"),("14", "2,3,4"),("15", _("All"))])
+
+	config.logmanager = ConfigSubsection()
+	config.logmanager.user = ConfigText(default='', fixed_size=False)
+	config.logmanager.useremail = ConfigText(default='', fixed_size=False)
+	config.logmanager.usersendcopy = ConfigYesNo(default=True)
+	config.logmanager.path = ConfigText(default='/')
+	config.logmanager.additionalinfo = NoSave(ConfigText(default=''))
+	config.logmanager.sentfiles = ConfigLocations(default='')
 
 	config.streaming = ConfigSubsection()
 	config.streaming.stream_ecm = ConfigYesNo(default = False)
