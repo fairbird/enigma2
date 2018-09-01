@@ -34,6 +34,8 @@ def InitUsageConfig():
 	config.usage.record_indicator_mode = ConfigSelection(default = "0", choices = [("0", _("None")), ("1", _("Left from servicename")), ("2", _("Right from servicename")), ("3", _("Red colored"))])
 	config.usage.record_indicator_mode.addNotifier(refreshServiceList)
 
+	config.usage.virtualkeyBoard_style = ConfigSelection(default='New', choices=[('New', _('New Style')), ('Old', _('Old Style'))])
+
 	choicelist = [("-1", _("Disable"))]
 	for i in range(0,1300,100):
 		choicelist.append((str(i), ngettext("%d pixel wide", "%d pixels wide", i) % i))
