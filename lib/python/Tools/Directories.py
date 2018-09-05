@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
-import re
-from stat import S_IMODE
+from re import compile
 from enigma import eEnv
+
+try:
+	from os import chmod
+	have_chmod = True
+except:
+	have_chmod = False
+
+try:
+	from os import utime
+	have_utime = True
+except:
+	have_utime = False
 
 SCOPE_TRANSPONDERDATA = 0
 SCOPE_SYSETC = 1
@@ -19,10 +30,18 @@ SCOPE_PLAYLIST = 11
 SCOPE_CURRENT_SKIN = 12
 SCOPE_METADIR = 16
 SCOPE_CURRENT_PLUGIN = 17
+SCOPE_TIMESHIFT = 18
+SCOPE_ACTIVE_SKIN = 19
+SCOPE_LCDSKIN = 20
+SCOPE_ACTIVE_LCDSKIN = 21
+SCOPE_AUTORECORD = 22
+SCOPE_DEFAULTDIR = 23
+SCOPE_DEFAULTPARTITION = 24
+SCOPE_DEFAULTPARTITIONMOUNTDIR = 25
 
 PATH_CREATE = 0
 PATH_DONTCREATE = 1
-
+PATH_FALLBACK = 2
 defaultPaths = {
 		SCOPE_TRANSPONDERDATA: (eEnv.resolve("${sysconfdir}/"), PATH_DONTCREATE),
 		SCOPE_SYSETC: (eEnv.resolve("${sysconfdir}/"), PATH_DONTCREATE),
@@ -33,14 +52,31 @@ defaultPaths = {
 		SCOPE_LANGUAGE: (eEnv.resolve("${datadir}/enigma2/po/"), PATH_DONTCREATE),
 
 		SCOPE_SKIN: (eEnv.resolve("${datadir}/enigma2/"), PATH_DONTCREATE),
+		SCOPE_LCDSKIN: (eEnv.resolve("${datadir}/enigma2/display/"), PATH_DONTCREATE),
 		SCOPE_SKIN_IMAGE: (eEnv.resolve("${datadir}/enigma2/"), PATH_DONTCREATE),
-		SCOPE_HDD: ("/hdd/movie/", PATH_DONTCREATE),
+		SCOPE_HDD: ("/media/hdd/movie/", PATH_DONTCREATE),
+		SCOPE_TIMESHIFT: ("/media/hdd/timeshift/", PATH_DONTCREATE),
+		SCOPE_AUTORECORD: ("/media/hdd/movie/", PATH_DONTCREATE),
 		SCOPE_MEDIA: ("/media/", PATH_DONTCREATE),
 		SCOPE_PLAYLIST: (eEnv.resolve("${sysconfdir}/enigma2/playlist/"), PATH_CREATE),
 
 		SCOPE_USERETC: ("", PATH_DONTCREATE), # user home directory
-
+		SCOPE_DEFAULTDIR: (eEnv.resolve("${datadir}/enigma2/defaults/"), PATH_CREATE),
+		SCOPE_DEFAULTPARTITION: ("/dev/mtdblock6", PATH_DONTCREATE),
+		SCOPE_DEFAULTPARTITIONMOUNTDIR: (eEnv.resolve("${datadir}/enigma2/dealer"), PATH_CREATE),
 		SCOPE_METADIR: (eEnv.resolve("${datadir}/meta"), PATH_CREATE),
+	}
+
+FILE_COPY = 0 # copy files from fallback dir to the basedir
+FILE_MOVE = 1 # move files
+PATH_COPY = 2 # copy the complete fallback dir to the basedir
+PATH_MOVE = 3 # move the fallback dir to the basedir (can be used for changes in paths)
+fallbackPaths = {
+		SCOPE_CONFIG: [("/home/root/", FILE_MOVE),
+					   (eEnv.resolve("${datadir}/enigma2/defaults/"), FILE_COPY)],
+		SCOPE_HDD: [("/media/hdd/movie", PATH_MOVE)],
+		SCOPE_TIMESHIFT: [("/media/hdd/timeshift", PATH_MOVE)],
+		SCOPE_AUTORECORD: [("/media/hdd/movie", PATH_MOVE)]
 	}
 
 def resolveFilename(scope, base = "", path_prefix = None):
@@ -57,22 +93,76 @@ def resolveFilename(scope, base = "", path_prefix = None):
 		from Components.config import config
 		# allow files in the config directory to replace skin files
 		tmp = defaultPaths[SCOPE_CONFIG][0]
-		if base and pathExists("%s%s" % (tmp, base)):
+		if base and pathExists(tmp + base):
 			path = tmp
 		else:
-			path = defaultPaths[SCOPE_SKIN][0]
+			tmp = defaultPaths[SCOPE_SKIN][0]
 			pos = config.skin.primary_skin.value.rfind('/')
 			if pos != -1:
-				skinname = config.skin.primary_skin.value[:pos+1]
-				#  remove skin name from base if exist
-				if base.startswith(skinname):
-					base = base[pos+1:]
-				for dir in ("%s%s" % (path, skinname), "%s%s" % (path, "skin_default/")):
-					for file in (base, os.path.basename(base)):
-						if pathExists("%s%s"% (dir, file)):
-							return "%s%s" % (dir, file)
+				#if basefile is not available use default skin path as fallback
+				tmpfile = tmp+config.skin.primary_skin.value[:pos+1] + base
+				if pathExists(tmpfile):
+					path = tmp+config.skin.primary_skin.value[:pos+1]
+				else:
+					path = tmp
 			else:
 				path = tmp
+
+	elif scope == SCOPE_ACTIVE_SKIN:
+		from Components.config import config
+		# allow files in the config directory to replace skin files
+		tmp = defaultPaths[SCOPE_CONFIG][0]
+		if base and pathExists(tmp + base):
+			path = tmp
+		elif base and pathExists(defaultPaths[SCOPE_SKIN][0] + base):
+			path = defaultPaths[SCOPE_SKIN][0]
+		else:
+			tmp = defaultPaths[SCOPE_SKIN][0]
+			pos = config.skin.primary_skin.value.rfind('/')
+			if pos != -1:
+				tmpfile = tmp+config.skin.primary_skin.value[:pos+1] + base
+				if pathExists(tmpfile) or (':' in tmpfile and pathExists(tmpfile.split(':')[0])):
+					path = tmp+config.skin.primary_skin.value[:pos+1]
+				elif pathExists(tmp + base) or (':' in base and pathExists(tmp + base.split(':')[0])):
+					path = tmp
+				else:
+					if 'skin_default' not in tmp:
+						path = tmp + 'skin_default/'
+					else:
+						path = tmp
+			else:
+				if pathExists(tmp + base):
+					path = tmp
+				elif 'skin_default' not in tmp:
+					path = tmp + 'skin_default/'
+				else:
+					path = tmp
+
+	elif scope == SCOPE_ACTIVE_LCDSKIN:
+		from Components.config import config
+		# allow files in the config directory to replace skin files
+		tmp = defaultPaths[SCOPE_CONFIG][0]
+		if base and pathExists(tmp + base):
+			path = tmp
+		elif base and pathExists(defaultPaths[SCOPE_LCDSKIN][0] + base):
+			path = defaultPaths[SCOPE_SKIN][0]
+		else:
+			tmp = defaultPaths[SCOPE_LCDSKIN][0]
+			pos = config.skin.display_skin.value.rfind('/')
+			if pos != -1:
+				tmpfile = tmp+config.skin.display_skin.value[:pos+1] + base
+				if pathExists(tmpfile):
+					path = tmp+config.skin.display_skin.value[:pos+1]
+				else:
+					if 'skin_default' not in tmp:
+						path = tmp + 'skin_default/'
+					else:
+						path = tmp
+			else:
+				if 'skin_default' not in tmp:
+					path = tmp + 'skin_default/'
+				else:
+					path = tmp
 
 	elif scope == SCOPE_CURRENT_PLUGIN:
 		tmp = defaultPaths[SCOPE_PLUGINS]
@@ -102,34 +192,48 @@ def resolveFilename(scope, base = "", path_prefix = None):
 				print "resolveFilename: Couldn't create %s" % path
 				return None
 
+	fallbackPath = fallbackPaths.get(scope)
+
+	if fallbackPath and not fileExists(path + base):
+		for x in fallbackPath:
+			try:
+				if x[1] == FILE_COPY:
+					if fileExists(x[0] + base):
+						try:
+							os.link(x[0] + base, path + base)
+						except:
+							os.system("cp " + x[0] + base + " " + path + base)
+						break
+				elif x[1] == FILE_MOVE:
+					if fileExists(x[0] + base):
+						os.rename(x[0] + base, path + base)
+						break
+				elif x[1] == PATH_COPY:
+					if pathExists(x[0]):
+						if not pathExists(defaultPaths[scope][0]):
+							os.mkdir(path)
+						os.system("cp -a " + x[0] + "* " + path)
+						break
+				elif x[1] == PATH_MOVE:
+					if pathExists(x[0]):
+						os.rename(x[0], path + base)
+						break
+			except Exception, e:
+				print "[D] Failed to recover %s:" % (path+base), e
+
+	# FIXME: we also have to handle DATADIR etc. here.
 	return path + base
+	# this is only the BASE - an extension must be added later.
 
 pathExists = os.path.exists
 isMount = os.path.ismount
-
-def bestRecordingLocation(candidates):
-	path = ''
-	biggest = 0
-	for candidate in candidates:
-		try:
-			stat = os.statvfs(candidate[1])
-			# must have some free space (i.e. not read-only)
-			if stat.f_bavail:
-				# Free space counts double
-				size = (stat.f_blocks + stat.f_bavail) * stat.f_bsize
-				if size > biggest:
-					path = candidate[1]
-					biggest = size
-		except Exception, e:
-			print "[DRL]", e
-	return path
 
 def defaultRecordingLocation(candidate=None):
 	if candidate and os.path.exists(candidate):
 		return candidate
 	# First, try whatever /hdd points to, or /media/hdd
 	try:
-		path = os.path.realpath("/hdd")
+		path = os.readlink('/hdd')
 	except:
 		path = '/media/hdd'
 	if not os.path.exists(path):
@@ -137,11 +241,20 @@ def defaultRecordingLocation(candidate=None):
 		# Find the largest local disk
 		from Components import Harddisk
 		mounts = [m for m in Harddisk.getProcMounts() if m[1].startswith('/media/')]
-		# Search local devices first, use the larger one
-		path = bestRecordingLocation([m for m in mounts if m[0].startswith('/dev/')])
-		# If we haven't found a viable candidate yet, try remote mounts
-		if not path:
-			path = bestRecordingLocation(mounts)
+		biggest = 0
+		havelocal = False
+		for candidate in mounts:
+			try:
+				islocal = candidate[1].startswith('/dev/') # Good enough
+				stat = os.statvfs(candidate[1])
+				# Free space counts double
+				size = (stat.f_blocks + stat.f_bavail) * stat.f_bsize
+				if (islocal and not havelocal) or (islocal or not havelocal and size > biggest):
+					path = candidate[1]
+					havelocal = islocal
+					biggest = size
+			except Exception, e:
+				print "[DRL]", e
 	if path:
 		# If there's a movie subdir, we'd probably want to use that.
 		movie = os.path.join(path, 'movie')
@@ -183,9 +296,6 @@ def fileExists(f, mode='r'):
 def fileCheck(f, mode='r'):
 	return fileExists(f, mode) and f
 
-def fileHas(f, content, mode='r'):
-        return fileExists(f, mode) and content in open(f, mode).read()
-
 def getRecordingFilename(basename, dirname = None):
 	# filter out non-allowed characters
 	non_allowed_characters = "/.\\:*?<>|\""
@@ -203,9 +313,11 @@ def getRecordingFilename(basename, dirname = None):
 
 	if dirname is not None:
 		if not dirname.startswith('/'):
-			dirname = os.path.join(defaultRecordingLocation(), dirname)
+			from Components.config import config
+			dirname = os.path.join(defaultRecordingLocation(config.usage.default_path.value), dirname)
 	else:
-		dirname = defaultRecordingLocation()
+		from Components.config import config
+		dirname = defaultRecordingLocation(config.usage.default_path.value)
 	filename = os.path.join(dirname, filename)
 
 	i = 0
@@ -231,7 +343,7 @@ def InitFallbackFiles():
 def crawlDirectory(directory, pattern):
 	list = []
 	if directory:
-		expression = re.compile(pattern)
+		expression = compile(pattern)
 		for root, dirs, files in os.walk(directory):
 			for file in files:
 				if expression.match(file) is not None:
@@ -250,9 +362,11 @@ def copyfile(src, dst):
 				break
 			f2.write(buf)
 		st = os.stat(src)
-		mode = S_IMODE(st.st_mode)
-		os.chmod(dst, mode)
-		os.utime(dst, (st.st_atime, st.st_mtime))
+		mode = os.stat.S_IMODE(st.st_mode)
+		if have_chmod:
+			chmod(dst, mode)
+		if have_utime:
+			utime(dst, (st.st_atime, st.st_mtime))
 	except:
 		print "copy", src, "to", dst, "failed!"
 		return -1
@@ -281,9 +395,11 @@ def copytree(src, dst, symlinks=False):
 			print "dont copy srcname (no file or link or folder)"
 	try:
 		st = os.stat(src)
-		mode = S_IMODE(st.st_mode)
-		os.chmod(dst, mode)
-		os.utime(dst, (st.st_atime, st.st_mtime))
+		mode = os.stat.S_IMODE(st.st_mode)
+		if have_chmod:
+			chmod(dst, mode)
+		if have_utime:
+			utime(dst, (st.st_atime, st.st_mtime))
 	except:
 		print "copy stats for", src, "failed!"
 
@@ -299,8 +415,8 @@ def moveFiles(fileList):
 		except OSError, e:
 			if e.errno == 18:
 				print "[Directories] cannot rename across devices, trying slow move"
-				import Screens.CopyFiles
-				Screens.CopyFiles.moveFiles(fileList, item[0])
+				import Tools.CopyFiles
+				Tools.CopyFiles.moveFiles(fileList, item[0])
 				print "[Directories] Moving in background..."
 			else:
 				raise
