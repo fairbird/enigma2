@@ -525,6 +525,29 @@ void eWidgetDesktop::resize(eSize size)
 	m_screen.m_screen_size = size;
 }
 
+#ifdef USE_LIBVUGLES2
+	gPainter painter(m_screen.m_dc);
+	painter.setView(size);
+#endif
+}
+ 
+void eWidgetDesktop::sendShow(ePoint point, eSize size)
+{
+	if(m_style_id!=0)
+		return;
+
+	gPainter painter(m_screen.m_dc);
+	painter.sendShow(point, size);
+}
+
+void eWidgetDesktop::sendHide(ePoint point, eSize size)
+{
+	if(m_style_id!=0)
+		return;
+
+	gPainter painter(m_screen.m_dc);
+	painter.sendHide(point, size);
+
 eRect eWidgetDesktop::bounds() const
 {
 	const eSize size = m_screen.m_screen_size;
