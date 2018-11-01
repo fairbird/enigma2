@@ -35,6 +35,8 @@
 			</menu>
 			<menu weight="5" level="0" text="System" entryID="system_selection">
 				<id val="system"/>
+				
+				<item weight="10" level="0" text= "Animations" entryID="animation_setup" description="Setup UI animations"><screen module="AnimationSetup" screen="AnimationSetup" /></item>
 
 				<menu level="0" text="Audio / Video" entryID="video_selection">
 				<id val="video"/>
