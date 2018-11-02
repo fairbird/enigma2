@@ -198,6 +198,10 @@ if test x"$with_amlogic" = xyes ; then
 	PKG_CHECK_MODULES(DVBCSA, libdvbcsa)
 fi
 
+if test "$BOXTYPE" == "dm7080" -o "$BOXTYPE" == "dm820"  -o "$BOXTYPE" == "dm900" -o "$BOXTYPE" == "dm520"; then
+	AC_DEFINE(CONFIG_ION, 1,[define BOX use ION Allocator])
+fi
+
 AC_ARG_WITH(alphablendingacceleration,
 	AC_HELP_STRING([--with-alphablendingacceleration=never/always/auto], [alphablending acceleration strategy: never accelerate / always accelerate / automatically decide when to accelerate (default)]),
 	[[with_alphablendingacceleration=$withval]],
