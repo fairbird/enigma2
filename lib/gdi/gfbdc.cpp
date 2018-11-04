@@ -1,3 +1,7 @@
+#ifdef USE_LIBVUGLES2
+#include <vuplus_gles.h>
+#endif
+
 #include <lib/gdi/gfbdc.h>
 
 #include <lib/base/init.h>
