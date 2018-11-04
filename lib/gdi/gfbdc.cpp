@@ -1,5 +1,9 @@
 #include <lib/gdi/gfbdc.h>
 
+#ifdef USE_LIBVUGLES2
+#include <vuplus_gles.h>
+#endif
+
 #include <lib/base/init.h>
 #include <lib/base/init_num.h>
 
