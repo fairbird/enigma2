@@ -394,6 +394,19 @@ def InitUsageConfig():
 
 	config.usage.boolean_graphic = ConfigYesNo(default=True)
 
+		config.misc.epgcache_filename = ConfigSelection(default = "/hdd/epg.dat", choices = [
+	("/hdd/epg.dat", "media/hdd"), ("/media/usb/epg.dat", "media/usb"), ("/media/net/epg.dat", "media/net"), ("/media/video/epg.dat", "media/video"), ("/media/music/epg.dat", "media/music"), ("/media/photo/epg.dat", "media/photo"), ("/media/downloads/epg.dat", "media/downloads"), ("/media/personal/epg.dat", "media/personal")])
+	def EpgCacheChanged(configElement):
+		from enigma import eEPGCache
+		config.misc.epgcache_filename.save()
+		eEPGCache.getInstance().setCacheFile(config.misc.epgcache_filename.value)
+		epgcache = eEPGCache.getInstance()
+		epgcache.save()		
+	config.misc.epgcache_filename.addNotifier(EpgCacheChanged, immediate_feedback = False)
+	
+	config.misc.deliteepgpop = ConfigYesNo(default = True)
+	config.misc.deliteepgbuttons = ConfigYesNo(default = True)
+
 	config.epg = ConfigSubsection()
 	config.epg.eit = ConfigYesNo(default = True)
 	config.epg.mhw = ConfigYesNo(default = False)
@@ -402,6 +415,7 @@ def InitUsageConfig():
 	config.epg.netmed = ConfigYesNo(default = True)
 	config.epg.virgin = ConfigYesNo(default = False)
 	config.misc.showradiopic = ConfigYesNo(default = True)
+	config.epg.sky = ConfigYesNo(default = True)
 	def EpgSettingsChanged(configElement):
 		from enigma import eEPGCache
 		mask = 0xffffffff
@@ -413,10 +427,8 @@ def InitUsageConfig():
 			mask &= ~(eEPGCache.FREESAT_NOWNEXT | eEPGCache.FREESAT_SCHEDULE | eEPGCache.FREESAT_SCHEDULE_OTHER)
 		if not config.epg.viasat.value:
 			mask &= ~eEPGCache.VIASAT
-		if not config.epg.netmed.value:
-			mask &= ~(eEPGCache.NETMED_SCHEDULE | eEPGCache.NETMED_SCHEDULE_OTHER)
-		if not config.epg.virgin.value:
-			mask &= ~(eEPGCache.VIRGIN_NOWNEXT | eEPGCache.VIRGIN_SCHEDULE)
+		if not config.epg.sky.value:
+			mask &= ~eEPGCache.SKY
 		eEPGCache.getInstance().setEpgSources(mask)
 	config.epg.eit.addNotifier(EpgSettingsChanged)
 	config.epg.mhw.addNotifier(EpgSettingsChanged)
@@ -424,6 +436,7 @@ def InitUsageConfig():
 	config.epg.viasat.addNotifier(EpgSettingsChanged)
 	config.epg.netmed.addNotifier(EpgSettingsChanged)
 	config.epg.virgin.addNotifier(EpgSettingsChanged)
+	config.epg.sky.addNotifier(EpgSettingsChanged)
 
 	config.epg.histminutes = ConfigSelectionNumber(min = 0, max = 120, stepwidth = 15, default = 0, wraparound = True)
 	def EpgHistorySecondsChanged(configElement):
