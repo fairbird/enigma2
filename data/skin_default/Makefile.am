@@ -48,11 +48,6 @@ dist_install_DATA = \
 	progress_big.png \
 	progress_medium.png \
 	progress_small.png \
-	rcold.png \
-	rc.png \
-	rc0.png \
-	rc1.png \
-	rc2.png \
 	screensaverpicture.png \
 	screws_mp.png \
 	screws.png \
