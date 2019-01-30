@@ -77,32 +77,8 @@ class UpdatePlugin(Screen, ProtectedScreen):
 		self.activityTimer.start(100, False)
 		message = ""
 		picon = None
-		try:
-			# TODO: Use Twisted's URL fetcher, urlopen is evil. And it can
-			# run in parallel to the package update.
-			url = "https://openpli.org/status/"
-			try:
-				status = urlopen(url, timeout=5).read().split('!', 1)
-			except:
-				# OpenPli 5.0 uses python 2.7.11 and here we need to bypass the certificate check
-				from ssl import _create_unverified_context
-				status = urlopen(url, timeout=5, context=_create_unverified_context()).read().split('!', 1)
-				print status
-			if getBoxType() in status[0].split(','):
-				message = len(status) > 1 and status[1] or _("The current image might not be stable.\nFor more information see %s.") % ("www.openpli.org")
-				# strip any HTML that may be in the message, but retain line breaks
-				import re
-				message = message.replace("<br />", "\n\n").replace("<br>", "\n\n")
-				message = re.sub('<[^<]+?>', '', re.sub('&#8209;', '-', message))
-				picon = MessageBox.TYPE_ERROR
-		except:
-			message = _("The status of the current image could not be checked because %s can not be reached.") % ("www.openpli.org")
-			picon = MessageBox.TYPE_ERROR
-		if message != "":
-			message += "\n" + _("Do you want to update your receiver?")
-			self.session.openWithCallback(self.startActualUpdate, MessageBox, message, picon = picon)
-		else:
-			self.startActualUpdate(True)
+		message += "\n" + _("Do you want to update your receiver?")
+		self.session.openWithCallback(self.startActualUpdate, MessageBox, message, picon = picon)
 
 	def getLatestImageTimestamp(self):
 		try:
