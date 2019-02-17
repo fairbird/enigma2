@@ -250,12 +250,19 @@
 		<key id="KEY_YELLOW" mapto="audioSelection" flags="b"/>
 	</map>
 
+	<map context="InfobarAspectSelectionActions">
+		<key id="KEY_GREEN" mapto="aspectSelection" flags="l" />
+		<key id="KEY_MODE" mapto="aspectSelection" flags="l" />
+		<key id="KEY_MODE" mapto="aspectSelection" flags="b" />
+	</map>
+
 	<map context="InfobarSubtitleSelectionActions">
 		<key id="KEY_SUBTITLE" mapto="subtitleSelection" flags="m"/>
 	</map>
 
 	<map context="InfobarSubserviceSelectionActions">
-		<key id="KEY_GREEN" mapto="subserviceSelection" flags="b"/>
+		<key id="KEY_GREEN" mapto="DeliteGpshow" flags="b" />
+		<key id="KEY_GREEN" mapto="GreenPressed" flags="l" />
 	</map>
 
 	<map context="InfobarRedButtonActions">
