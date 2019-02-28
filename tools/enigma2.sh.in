@@ -21,15 +21,11 @@ LIBS=@libdir@/libopen.so.0.0.0
 # enigma main loop
 while : ; do
 	# show bootlogo on enigma2 start
-	if [ -x @bindir@/showiframe ]; then
-		if [ -f @sysconfdir@/enigma2/backdrop.mvi ]; then
-			@bindir@/showiframe @sysconfdir@/enigma2/backdrop.mvi
-		elif [ -f @sysconfdir@/enigma2/bootlogo.mvi ]; then
-			@bindir@/showiframe @sysconfdir@/enigma2/bootlogo.mvi
-		elif [ -f @datadir@/bootlogo.mvi ]; then
-			@bindir@/showiframe @datadir@/bootlogo.mvi
-		fi
-	fi
+/bin/jump_screen.sh
+
+if [ -x /usr/bin/showiframe -a -f /usr/share/backdrop.mvi ]; then
+	/usr/bin/showiframe /usr/share/backdrop.mvi
+fi
 
 	# hook to execute scripts always before enigma2 start
 	if [ -x @bindir@/enigma2_pre_start.sh ]; then
