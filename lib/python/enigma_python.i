@@ -106,6 +106,7 @@ is usually caused by not marking PSignals as immutable.
 #include <lib/driver/misc_options.h>
 #include <lib/driver/etimezone.h>
 #include <lib/gdi/lcd.h>
+#include <lib/dvb/fcc.h>
 #include <lib/mmi/mmi_ui.h>
 #include <lib/dvb_ci/dvbci.h>
 #include <lib/dvb_ci/dvbci_ui.h>
@@ -186,6 +187,7 @@ typedef long time_t;
 %immutable eHdmiCEC::addressChanged;
 %immutable ePythonMessagePump::recv_msg;
 %immutable eDVBLocalTimeHandler::m_timeUpdated;
+%immutable eFCCServiceManager::m_fcc_event;
 %immutable iCryptoInfo::clientname;
 %immutable iCryptoInfo::clientinfo;
 %immutable iCryptoInfo::verboseinfo;
@@ -257,6 +259,7 @@ typedef long time_t;
 %include <lib/python/python.h>
 %include <lib/python/pythonconfig.h>
 %include <lib/gdi/picload.h>
+%include <lib/dvb/fcc.h>
 %include <lib/dvb/streamserver.h>
 /**************  eptr  **************/
 
@@ -420,6 +423,25 @@ int getLinkedSlotID(int fe)
         eFBCTunerManager *mgr = eFBCTunerManager::getInstance();
         if (mgr) return mgr->getLinkedSlotID(fe);
         return -1;
+}
+%}
+
+void setFCCEnable(int);
+%{
+void setFCCEnable(int enable)
+{
+        eFCCServiceManager *fcc_mng = eFCCServiceManager::getInstance();
+        if (fcc_mng) setFCCEnable(enable);
+}
+%}
+
+bool IsFBCLink(int);
+%{
+bool IsFBCLink(int fe)
+{
+        eFBCTunerManager *mgr = eFBCTunerManager::getInstance();
+        if (mgr) return mgr->IsFBCLink(fe);
+        return false;
 }
 %}
 
