@@ -14,6 +14,8 @@ pip_config_initialized = False
 PipPigModeEnabled = False
 PipPigModeTimer = eTimer()
 
+on_pip_start_stop = []
+
 def timedStopPipPigMode():
 	from Screens.InfoBar import InfoBar
 	if InfoBar.instance and InfoBar.instance.session:
@@ -234,3 +236,8 @@ class PictureInPicture(Screen):
 			oldref = self.currentServiceReference or eServiceReference()
 			return getBestPlayableServiceReference(service, oldref)
 		return service
+
+	def onPipStartAndStop(self):
+		global on_pip_start_stop
+		for x in on_pip_start_stop:
+			x()
